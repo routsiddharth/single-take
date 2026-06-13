@@ -1,0 +1,12 @@
+node_modules
+.next
+.env
+.env.local
+/data
+next-env.d.ts
+*.tsbuildinfo
+.DS_Store
+.claude
+.playwright-cli
+CLAUDE.md
+src/db/seed.ts

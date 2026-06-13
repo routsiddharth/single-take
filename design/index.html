@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>single take — mockup index</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --paper:#f4f0e6; --ink:#0d0d0d; --red:#e8341c; --yellow:#ffe600; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ background:var(--paper); color:var(--ink); font-family:"Space Mono",monospace; padding:0 0 80px; }
+  .top{ border-bottom:3px solid var(--ink); padding:22px 40px 18px; display:flex; align-items:baseline; gap:18px; flex-wrap:wrap; }
+  .brand{ font-family:"Archivo Black",sans-serif; font-size:42px; letter-spacing:-.02em; }
+  .brand .dot{ color:var(--red); }
+  .tag{ font-size:12px; text-transform:uppercase; letter-spacing:.12em; color:#555; }
+  .lede{ padding:26px 40px; max-width:880px; }
+  .lede h1{ font-family:"Newsreader",serif; font-style:italic; font-weight:400; font-size:30px; line-height:1.2; margin-bottom:10px; }
+  .lede p{ font-size:13px; line-height:1.7; color:#333; }
+  .grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:2px; background:var(--ink); border-top:3px solid var(--ink); border-bottom:3px solid var(--ink); }
+  .cell{ background:var(--paper); padding:0; display:flex; flex-direction:column; }
+  .cell a{ display:block; color:inherit; text-decoration:none; }
+  .shot{ aspect-ratio:1440/900; overflow:hidden; border-bottom:1px solid var(--ink); background:#fff; }
+  .shot img{ width:100%; display:block; }
+  .meta{ padding:16px 22px 20px; }
+  .meta .lot{ font-size:11px; text-transform:uppercase; letter-spacing:.14em; color:var(--red); font-weight:700; }
+  .meta h2{ font-family:"Archivo Black",sans-serif; font-size:22px; margin:6px 0 6px; letter-spacing:-.01em; }
+  .meta p{ font-size:12px; line-height:1.6; color:#444; }
+  .meta .links{ margin-top:12px; font-size:12px; }
+  .meta .links a{ color:var(--ink); border-bottom:1px solid var(--ink); padding-bottom:1px; margin-right:14px; }
+  .foot{ padding:30px 40px 0; font-size:11px; text-transform:uppercase; letter-spacing:.12em; color:#666; }
+</style>
+</head>
+<body>
+  <div class="top">
+    <span class="brand">single take<span class="dot">.</span></span>
+    <span class="tag">design mockups · vol. 002 · richard turley auction-catalog direction</span>
+  </div>
+  <div class="lede">
+    <h1>one prompt. one shot. posted instantly — a museum of first attempts.</h1>
+    <p>Five high-fidelity desktop mockups (1440px). Casino-meets-museum identity executed as a Bloomberg Businessweek-era auction-house tabloid: cream stock, heavy black rules, shock red, betting-slip yellow, prompts as Newsreader-italic placards, scores in Archivo Black, provenance as a mono "medium line." Click any thumbnail to open the live HTML.</p>
+  </div>
+
+  <div class="grid">
+    <div class="cell"><a href="mockups/feed-page.html">
+      <div class="shot"><img src="mockups/feed-page-full.png" alt="feed page"></div>
+      <div class="meta">
+        <span class="lot">Lot №1 · the global feed</span>
+        <h2>The Feed</h2>
+        <p>Auction catalog of one-shot artifacts. Betting-slip composer, live/building/failed lots, the begging button, rain-piano, log-scale universe, lying clock, and a tombstoned flight sim.</p>
+        <div class="links"><a href="mockups/feed-page.html">open html ↗</a><a href="mockups/feed-page-full.png">full png</a></div>
+      </div></a>
+    </div>
+    <div class="cell"><a href="mockups/post-page.html">
+      <div class="shot"><img src="mockups/post-page-full.png" alt="post page"></div>
+      <div class="meta">
+        <span class="lot">Lot №2 · permalink</span>
+        <h2>The Lot Page</h2>
+        <p>Single-artifact exhibit: framed sandboxed viewer, medium-line provenance, "steal prompt," 412 catalog-style remarks, and an adjacent-lots strip.</p>
+        <div class="links"><a href="mockups/post-page.html">open html ↗</a><a href="mockups/post-page-full.png">full png</a></div>
+      </div></a>
+    </div>
+    <div class="cell"><a href="mockups/profile-page.html">
+      <div class="shot"><img src="mockups/profile-page-full.png" alt="profile page"></div>
+      <div class="meta">
+        <span class="lot">Lot №3 · seller catalog</span>
+        <h2>The Profile</h2>
+        <p>A dealer's record: survival rate, win/loss form guide, and the full wall of lots — failures and a building tile included, because they stay on the wall.</p>
+        <div class="links"><a href="mockups/profile-page.html">open html ↗</a><a href="mockups/profile-page-full.png">full png</a></div>
+      </div></a>
+    </div>
+    <div class="cell"><a href="mockups/about-page.html">
+      <div class="shot"><img src="mockups/about-page-full.png" alt="about page"></div>
+      <div class="meta">
+        <span class="lot">Lot №4 · the rules</span>
+        <h2>Conditions of Sale</h2>
+        <p>The manifesto as auction terms — seven numbered articles, the "how to read the medium line" primer, and three big house stats.</p>
+        <div class="links"><a href="mockups/about-page.html">open html ↗</a><a href="mockups/about-page-full.png">full png</a></div>
+      </div></a>
+    </div>
+    <div class="cell" style="grid-column:1 / -1;"><a href="mockups/signin-page.html">
+      <div class="shot" style="aspect-ratio:1440/620;"><img src="mockups/signin-page-full.png" alt="sign in page"></div>
+      <div class="meta">
+        <span class="lot">Lot №5 · admission</span>
+        <h2>Register as a Bidder</h2>
+        <p>Sign-up as auction admission: manifesto headline, "spectators free" stamp, and the bidder's paddle — perforated yellow ticket with pre-assigned paddle №88,403, magic-link, and a Turnstile checkpoint.</p>
+        <div class="links"><a href="mockups/signin-page.html">open html ↗</a><a href="mockups/signin-page-full.png">full png</a></div>
+      </div></a>
+    </div>
+  </div>
+
+  <p class="foot">explorations that lost the vote live in /design-demos · big-type billboard · are.na ledger · turley catalog (selected)</p>
+</body>
+</html>

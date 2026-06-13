@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════════════════
+  single take — POST DETAIL ("LOT PAGE")
+  Same Turley auction-house tabloid system as the feed:
+  paper stock, heavy black rules, one shock red, betting-slip yellow,
+  Newsreader italic placards, Archivo Black numerals, mono provenance.
+  The lot page is the WALL the artwork hangs on: placard huge, artifact
+  framed like a live exhibit, provenance as a museum medium line,
+  remarks as the guestbook (also permanent).
+  ═══════════════════════════════════════════════════════════════════════════
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>single take — LOT №88,114 · @null_and_void</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,500&family=Newsreader:ital,opsz,wght@0,6..72,300..800;1,6..72,300..800&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F3EFE5;
+    --ink:#141310;
+    --red:#FF2D00;
+    --yellow:#FFE600;
+    --rule:2px solid var(--ink);
+    --rule-heavy:3px solid var(--ink);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{background:#DAD5C6;}
+  body{
+    font-family:'Archivo',sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    max-width:1440px;
+    margin:0 auto;
+    border-left:var(--rule-heavy);
+    border-right:var(--rule-heavy);
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--yellow);}
+
+  /* ── TICKER ───────────────────────────────────────── */
+  .ticker{
+    background:var(--ink); color:var(--paper);
+    overflow:hidden; white-space:nowrap;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+    padding:7px 0;
+  }
+  .ticker-inner{display:inline-block; animation:tick 38s linear infinite;}
+  @keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  .ticker b{color:var(--yellow);font-weight:500;}
+  .ticker .r{color:var(--red);font-weight:600;}
+
+  /* ── MASTHEAD ─────────────────────────────────────── */
+  .masthead{
+    display:grid; grid-template-columns:1fr auto;
+    align-items:end; padding:22px 36px 16px;
+    border-bottom:var(--rule-heavy);
+  }
+  .wordmark{
+    font-family:'Archivo Black',sans-serif;
+    font-size:74px; line-height:.85; letter-spacing:-.035em;
+    text-transform:lowercase; text-decoration:none; color:var(--ink); display:block;
+  }
+  .wordmark .dot{color:var(--red);}
+  .masthead-meta{
+    text-align:right; font-family:'IBM Plex Mono',monospace;
+    font-size:11px; line-height:1.7; letter-spacing:.08em; text-transform:uppercase;
+  }
+  .masthead-meta .vol{border-bottom:2px solid var(--ink); padding-bottom:4px; margin-bottom:4px;}
+  .masthead-tag{
+    font-family:'Newsreader',serif; font-style:italic; font-weight:500;
+    font-size:17px; letter-spacing:0; text-transform:none; color:var(--ink);
+  }
+
+  /* ── NAV ──────────────────────────────────────────── */
+  .nav{
+    display:grid; grid-template-columns:auto 1fr auto;
+    align-items:stretch; border-bottom:var(--rule-heavy);
+  }
+  .sorts{display:flex;}
+  .sorts a{
+    display:flex; align-items:center; gap:9px;
+    padding:13px 30px; text-decoration:none; color:var(--ink);
+    font-family:'Archivo',sans-serif; font-weight:800; font-size:14px;
+    letter-spacing:.18em; text-transform:uppercase;
+    border-right:var(--rule);
+  }
+  .sorts a.on{background:var(--ink); color:var(--paper);}
+  .sorts a.on .flame{color:var(--yellow);}
+  .sorts a:hover:not(.on){background:var(--yellow);}
+  .sorts .flame{font-family:'IBM Plex Mono',monospace; font-weight:700; color:var(--red);}
+  .nav-mid{
+    display:flex; align-items:center; justify-content:center;
+    font-family:'IBM Plex Mono',monospace; font-size:11px;
+    letter-spacing:.12em; text-transform:uppercase; color:var(--ink);
+  }
+  .nav-mid .blink{display:inline-block;width:8px;height:8px;background:var(--red);border-radius:50%;margin-right:8px;animation:blink 1.1s steps(2) infinite;}
+  @keyframes blink{50%{opacity:.15}}
+  .signin{
+    display:flex; align-items:center; padding:0 30px;
+    border-left:var(--rule); background:var(--paper);
+    font-weight:800; font-size:14px; letter-spacing:.18em; text-transform:uppercase;
+    text-decoration:none; color:var(--ink); cursor:pointer;
+  }
+  .signin:hover{background:var(--ink); color:var(--paper);}
+
+  /* ── LOT HEADER STRIP ─────────────────────────────── */
+  .lot-strip{
+    display:flex; align-items:stretch; border-bottom:var(--rule-heavy);
+    font-family:'IBM Plex Mono',monospace;
+  }
+  .lot-strip .lot-id{
+    background:var(--ink); color:var(--paper);
+    font-family:'Archivo Black',sans-serif; font-size:30px; letter-spacing:-.01em;
+    padding:14px 30px 12px; white-space:nowrap;
+  }
+  .lot-strip .lot-id em{font-style:normal; color:var(--yellow);}
+  .lot-strip .crumbs{
+    display:flex; align-items:center; gap:14px; padding:0 28px;
+    font-size:12px; letter-spacing:.08em; text-transform:uppercase; flex:1;
+  }
+  .lot-strip .crumbs .handle{font-weight:700; text-decoration:none; color:var(--ink); border-bottom:2px solid var(--ink);}
+  .lot-strip .crumbs .handle:hover{background:var(--yellow);}
+  .lot-strip .crumbs .when{color:rgba(20,19,16,.55);}
+  .stamp{
+    font-family:'Archivo',sans-serif; font-weight:900;
+    font-size:11px; letter-spacing:.22em; text-transform:uppercase;
+    padding:4px 10px 3px; border:2px solid var(--ink);
+  }
+  .stamp.live{background:var(--ink); color:var(--paper);}
+  .stamp.live::before{content:"●"; color:#3DDC4E; margin-right:7px; font-size:9px; vertical-align:1px;}
+  .lot-strip .permalink{
+    display:flex; align-items:center; padding:0 28px;
+    border-left:var(--rule); font-size:12px; letter-spacing:.08em;
+    text-transform:uppercase; font-weight:700; text-decoration:none; color:var(--ink);
+  }
+  .lot-strip .permalink:hover{background:var(--yellow);}
+
+  /* ── PLACARD ZONE ─────────────────────────────────── */
+  .placard-zone{
+    display:grid; grid-template-columns:176px 1fr;
+    border-bottom:var(--rule-heavy);
+  }
+  .votes{
+    border-right:var(--rule); padding:30px 0 22px;
+    display:flex; flex-direction:column; align-items:center; gap:10px;
+  }
+  .arrow{width:46px;height:32px;cursor:pointer;display:block;}
+  .arrow svg{display:block;width:100%;height:100%;}
+  .arrow svg polygon{fill:none;stroke:var(--ink);stroke-width:2.5;}
+  .arrow:hover svg polygon{fill:var(--red);stroke:var(--red);}
+  .arrow.dn:hover svg polygon{fill:var(--ink);stroke:var(--ink);}
+  .score{
+    font-family:'Archivo Black',sans-serif; font-size:58px; line-height:1;
+    letter-spacing:-.03em; margin:4px 0 0;
+  }
+  .score-lbl{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:rgba(20,19,16,.55);}
+  .vote-note{
+    margin-top:auto; padding:16px 18px 0; text-align:center;
+    font-family:'Newsreader',serif; font-style:italic; font-size:13px;
+    color:rgba(20,19,16,.5); line-height:1.35;
+  }
+  .placard-main{padding:38px 56px 30px; min-width:0; display:flex; flex-direction:column;}
+  .placard-kicker{
+    font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.2em;
+    text-transform:uppercase; color:rgba(20,19,16,.55); margin-bottom:14px;
+  }
+  .prompt{
+    font-family:'Newsreader',serif; font-style:italic; font-weight:500;
+    font-size:64px; line-height:1.08; letter-spacing:-.012em;
+    max-width:1020px; text-wrap:balance;
+  }
+  .prompt .q{color:var(--red); font-weight:600;}
+  .placard-sub{
+    margin-top:22px; display:flex; align-items:baseline; gap:14px;
+    font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:.07em;
+    text-transform:uppercase;
+  }
+  .placard-sub .dim{color:rgba(20,19,16,.6);}
+  .placard-sub .note{
+    font-family:'Newsreader',serif; font-style:italic; font-size:13.5px;
+    color:rgba(20,19,16,.5); text-transform:none; letter-spacing:0;
+  }
+
+  /* ── EXHIBIT / ARTIFACT VIEWER ────────────────────── */
+  .exhibit{border-bottom:var(--rule-heavy); background:#E6E1D2;}
+  .frame-bar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:9px 36px; border-bottom:var(--rule);
+    font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.12em;
+    text-transform:uppercase; background:var(--paper);
+  }
+  .frame-bar .lft{display:flex; gap:0; align-items:baseline; color:rgba(20,19,16,.65);}
+  .frame-bar .lft a{color:var(--ink); text-decoration:none; font-weight:700;}
+  .frame-bar .lft a:hover{color:var(--red);}
+  .frame-bar .sep{margin:0 12px; color:rgba(20,19,16,.35);}
+  .frame-bar .rgt{display:flex; align-items:center;}
+  .frame-bar .rgt a{color:var(--ink); text-decoration:none; font-weight:700; padding:2px 0;}
+  .frame-bar .rgt a:hover{background:var(--yellow);}
+  .frame-bar .rgt .fs{color:var(--red);}
+  .frame-mat{padding:34px 60px 38px;}
+  .frame-outer{
+    border:var(--rule-heavy); background:var(--ink); padding:10px;
+    box-shadow:8px 8px 0 rgba(20,19,16,.18);
+  }
+  .frame-inner{background:#fff; height:520px; position:relative; overflow:hidden;}
+  .frame-caption{
+    display:flex; justify-content:space-between; margin-top:12px;
+    font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.16em;
+    text-transform:uppercase; color:rgba(20,19,16,.6);
+  }
+
+  /* the begging button vignette — live exhibit */
+  .vg-button{
+    width:100%;height:100%;background:#fff;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
+    font-family:'Archivo',sans-serif; position:relative;
+  }
+  .vg-button .plea0{font-size:12px;color:#bbb;letter-spacing:.02em;}
+  .vg-button .plea1{font-size:14px;color:#999;}
+  .vg-button .plea2{font-size:16px;color:#555;font-weight:600;}
+  .vg-button .thebtn{
+    background:#e8442c;color:#fff;border:none;border-radius:8px;
+    font-family:'Archivo',sans-serif;font-weight:800;font-size:24px;letter-spacing:.02em;
+    padding:22px 54px; box-shadow:0 8px 0 #9c2413; cursor:pointer;
+    animation:btnpulse 1.4s ease-in-out infinite; margin:10px 0;
+  }
+  .vg-button .thebtn:active{transform:translateY(6px); box-shadow:0 2px 0 #9c2413;}
+  @keyframes btnpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+  .vg-button .plea3{font-size:21px;color:#c00;font-weight:900;letter-spacing:.04em;animation:tremble .18s linear infinite;}
+  @keyframes tremble{0%{transform:translateX(0)}25%{transform:translateX(-1px) rotate(-.4deg)}75%{transform:translateX(1px) rotate(.4deg)}100%{transform:translateX(0)}}
+  .vg-button .plea4{font-size:12px;color:#999;font-style:italic;font-family:'Newsreader',serif;}
+  .vg-button .presscount{
+    position:absolute; bottom:14px; right:18px;
+    font-family:'IBM Plex Mono',monospace; font-size:10px; color:#aaa; letter-spacing:.08em;
+  }
+  .vg-button .corner-plea{
+    position:absolute; font-family:'Newsreader',serif; font-style:italic;
+    color:#c9c4b8; font-size:13px;
+  }
+  .vg-button .cp1{top:26px; left:34px; transform:rotate(-2deg);}
+  .vg-button .cp2{top:44px; right:46px; transform:rotate(1.5deg);}
+  .vg-button .cp3{bottom:52px; left:52px; transform:rotate(1deg);}
+
+  /* ── PROVENANCE PLACARD (museum medium line) ──────── */
+  .prov-zone{
+    display:grid; grid-template-columns:1fr 420px;
+    border-bottom:var(--rule-heavy);
+  }
+  .prov-card{padding:26px 36px 24px; border-right:var(--rule);}
+  .prov-kicker{
+    font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.2em;
+    text-transform:uppercase; color:rgba(20,19,16,.55); margin-bottom:14px;
+  }
+  .prov-grid{
+    display:grid; grid-template-columns:repeat(5,auto); gap:0 0; border:var(--rule);
+  }
+  .prov-cell{
+    padding:12px 22px 10px; border-right:1px solid rgba(20,19,16,.3);
+    font-family:'IBM Plex Mono',monospace;
+  }
+  .prov-cell:last-child{border-right:none;}
+  .prov-cell .k{font-size:9px; letter-spacing:.2em; text-transform:uppercase; color:rgba(20,19,16,.5); display:block; margin-bottom:5px;}
+  .prov-cell .v{font-size:15px; font-weight:700; letter-spacing:.02em;}
+  .prov-cell .v small{font-weight:400; font-size:11px; color:rgba(20,19,16,.55);}
+  .prov-note{
+    margin-top:12px; font-family:'Newsreader',serif; font-style:italic; font-size:14px;
+    color:rgba(20,19,16,.55);
+  }
+  .prov-actions{display:flex; flex-direction:column;}
+  .pact{
+    flex:1; display:flex; align-items:center; justify-content:space-between;
+    padding:0 28px; text-decoration:none; color:var(--ink); cursor:pointer;
+    border-bottom:1px solid rgba(20,19,16,.3); background:transparent; border-left:none; border-right:none; border-top:none;
+    font-family:'Archivo',sans-serif; font-weight:800; font-size:14px;
+    letter-spacing:.16em; text-transform:uppercase; text-align:left;
+  }
+  .pact:last-child{border-bottom:none;}
+  .pact:hover{background:var(--yellow);}
+  .pact.primary{background:var(--red); color:var(--paper);}
+  .pact.primary:hover{background:var(--ink);}
+  .pact .hint{
+    font-family:'IBM Plex Mono',monospace; font-weight:400; font-size:10px;
+    letter-spacing:.08em; color:inherit; opacity:.65; text-transform:none;
+  }
+
+  /* ── REMARKS (COMMENTS) ───────────────────────────── */
+  .remarks-head{
+    display:flex; justify-content:space-between; align-items:baseline;
+    padding:16px 36px 14px; border-bottom:var(--rule);
+  }
+  .remarks-head h2{
+    font-family:'Archivo Black',sans-serif; font-size:30px; letter-spacing:-.02em;
+    text-transform:lowercase;
+  }
+  .remarks-head h2 b{color:var(--red);}
+  .remarks-head .sortby{
+    font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.12em; text-transform:uppercase;
+    color:rgba(20,19,16,.6);
+  }
+  .remarks-head .sortby a{color:var(--ink); font-weight:700; text-decoration:none; border-bottom:2px solid var(--ink);}
+  .remarks-head .sortby a:hover{background:var(--yellow);}
+
+  .remark{
+    display:grid; grid-template-columns:110px 1fr;
+    border-bottom:var(--rule);
+  }
+  .remark:last-of-type{border-bottom:var(--rule-heavy);}
+  .r-votes{
+    border-right:1px solid rgba(20,19,16,.3); padding:16px 0 12px;
+    display:flex; flex-direction:column; align-items:center; gap:4px;
+  }
+  .r-arrow{width:22px;height:15px;cursor:pointer;display:block;}
+  .r-arrow svg{display:block;width:100%;height:100%;}
+  .r-arrow svg polygon{fill:none;stroke:var(--ink);stroke-width:2.2;}
+  .r-arrow:hover svg polygon{fill:var(--red);stroke:var(--red);}
+  .r-arrow.dn:hover svg polygon{fill:var(--ink);stroke:var(--ink);}
+  .r-score{font-family:'Archivo Black',sans-serif; font-size:19px; line-height:1; letter-spacing:-.02em;}
+  .r-score.neg{color:var(--red);}
+  .r-body{padding:15px 30px 16px; min-width:0;}
+  .r-byline{
+    display:flex; align-items:baseline; gap:12px;
+    font-family:'IBM Plex Mono',monospace; font-size:11.5px; letter-spacing:.06em;
+  }
+  .r-byline .handle{font-weight:700; text-decoration:none; color:var(--ink); border-bottom:2px solid var(--ink);}
+  .r-byline .handle:hover{background:var(--yellow);}
+  .r-byline .when{color:rgba(20,19,16,.5);}
+  .r-byline .badge{
+    font-size:9px; letter-spacing:.18em; text-transform:uppercase;
+    border:1.5px solid var(--ink); padding:2px 7px 1px; font-weight:700;
+  }
+  .r-byline .badge.op{background:var(--ink); color:var(--yellow);}
+  .r-text{
+    font-family:'Newsreader',serif; font-size:19px; line-height:1.35; font-weight:450;
+    margin-top:8px; max-width:880px;
+  }
+  .r-text em{font-style:italic;}
+  .r-acts{
+    margin-top:10px; display:flex; gap:18px;
+    font-family:'Archivo',sans-serif; font-weight:700; font-size:10px;
+    letter-spacing:.16em; text-transform:uppercase;
+  }
+  .r-acts a{color:rgba(20,19,16,.55); text-decoration:none; cursor:pointer;}
+  .r-acts a:hover{color:var(--ink); background:var(--yellow);}
+
+  /* collapsed troll */
+  .remark.collapsed{background:#ECE7D9;}
+  .remark.collapsed .r-votes{opacity:.45;}
+  .collapsed-row{
+    padding:13px 30px; display:flex; align-items:baseline; gap:14px;
+    font-family:'IBM Plex Mono',monospace; font-size:11.5px; letter-spacing:.06em;
+  }
+  .collapsed-row .handle-dim{font-weight:700; color:rgba(20,19,16,.45); text-decoration:line-through; text-decoration-color:rgba(255,45,0,.55); text-decoration-thickness:2px;}
+  .collapsed-row .why{
+    font-family:'Newsreader',serif; font-style:italic; font-size:13px;
+    color:rgba(20,19,16,.5); letter-spacing:0;
+  }
+  .collapsed-row .show{
+    margin-left:auto; font-family:'Archivo',sans-serif; font-weight:800; font-size:10px;
+    letter-spacing:.16em; text-transform:uppercase; color:var(--ink);
+    text-decoration:none; cursor:pointer; border-bottom:2px solid var(--red); white-space:nowrap;
+  }
+  .collapsed-row .show:hover{background:var(--yellow);}
+  .remark.collapsed .hidden-body{display:none; padding:0 30px 16px;}
+  .remark.collapsed.revealed .hidden-body{display:block;}
+  .remark.collapsed.revealed{background:#ECE7D9;}
+  .hidden-body .r-text{color:rgba(20,19,16,.7);}
+
+  /* remark composer — guestbook slip */
+  .r-slip{
+    background:var(--yellow); border-bottom:var(--rule-heavy);
+    display:grid; grid-template-columns:110px 1fr 220px;
+  }
+  .r-slip-label{
+    border-right:var(--rule); padding:16px 12px;
+    display:flex; flex-direction:column; justify-content:space-between;
+  }
+  .r-slip-label .no{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;}
+  .r-slip-label .big{
+    font-family:'Archivo Black',sans-serif; font-size:12px; line-height:1.25;
+    text-transform:uppercase; letter-spacing:.05em;
+    writing-mode:vertical-rl; transform:rotate(180deg); align-self:center;
+  }
+  .r-slip-main{padding:18px 28px 14px; display:flex; flex-direction:column;}
+  .r-slip textarea{
+    width:100%; border:none; background:transparent; resize:none;
+    font-family:'Newsreader',serif; font-style:italic; font-weight:500;
+    font-size:23px; line-height:1.25; color:var(--ink);
+    min-height:62px; outline:none;
+  }
+  .r-slip textarea::placeholder{color:rgba(20,19,16,.42);}
+  .r-slip-meta{
+    display:flex; justify-content:space-between; align-items:baseline;
+    margin-top:8px; padding-top:8px; border-top:2px solid var(--ink);
+    font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.08em;
+  }
+  .r-slip-meta b{font-weight:700;}
+  .r-send-col{border-left:var(--rule); display:flex; flex-direction:column;}
+  .r-send-btn{
+    flex:1; border:none; cursor:pointer;
+    background:var(--ink); color:var(--paper);
+    font-family:'Archivo Black',sans-serif; font-size:21px; letter-spacing:-.01em;
+    text-transform:lowercase; line-height:1;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+  }
+  .r-send-btn:hover{background:var(--red);}
+  .r-send-sub{
+    border-top:var(--rule); padding:7px 12px; text-align:center;
+    font-family:'IBM Plex Mono',monospace; font-size:9.5px; letter-spacing:.1em;
+    text-transform:uppercase; background:var(--yellow);
+  }
+
+  /* ── ADJACENT LOTS ────────────────────────────────── */
+  .adjacent-head{
+    display:flex; justify-content:space-between; align-items:baseline;
+    padding:16px 36px 14px; border-bottom:var(--rule);
+  }
+  .adjacent-head h2{
+    font-family:'Archivo Black',sans-serif; font-size:24px; letter-spacing:-.02em; text-transform:lowercase;
+  }
+  .adjacent-head span{
+    font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.12em;
+    text-transform:uppercase; color:rgba(20,19,16,.6);
+  }
+  .adjacent{display:grid; grid-template-columns:1fr 1fr 1fr; border-bottom:var(--rule-heavy);}
+  .mini-lot{
+    border-right:var(--rule); display:flex; flex-direction:column;
+    text-decoration:none; color:var(--ink); min-width:0;
+  }
+  .mini-lot:last-child{border-right:none;}
+  .mini-lot:hover .mini-prompt{background:var(--yellow);}
+  .mini-thumb{height:172px; position:relative; overflow:hidden; border-bottom:var(--rule); background:#fff;}
+  .mini-meta{
+    display:flex; justify-content:space-between; align-items:baseline;
+    padding:10px 18px 0; font-family:'IBM Plex Mono',monospace; font-size:10px;
+    letter-spacing:.14em; text-transform:uppercase; color:rgba(20,19,16,.55);
+  }
+  .mini-meta b{color:var(--ink); font-weight:700;}
+  .mini-meta .neg{color:var(--red); font-weight:700;}
+  .mini-prompt{
+    font-family:'Newsreader',serif; font-style:italic; font-weight:500;
+    font-size:19px; line-height:1.2; padding:8px 18px 14px; flex:1;
+  }
+  .mini-prompt.dead{
+    color:rgba(20,19,16,.7); text-decoration:line-through;
+    text-decoration-color:rgba(255,45,0,.6); text-decoration-thickness:2px;
+  }
+  .mini-foot{
+    border-top:1px solid rgba(20,19,16,.3); padding:8px 18px;
+    display:flex; justify-content:space-between;
+    font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.1em; text-transform:uppercase;
+  }
+  .mini-foot .st{font-weight:700;}
+  .mini-foot .st.dead{color:var(--red);}
+  .vg-canvas{display:block;width:100%;height:100%;}
+
+  /* mini tombstone */
+  .mini-tomb{
+    width:100%;height:100%;
+    background:linear-gradient(#EFEBE0 70%, #D8D2BF 70%);
+    display:flex;align-items:flex-end;justify-content:center;
+  }
+  .tombstone{
+    width:128px;height:112px;background:#A9A496;
+    border:3px solid var(--ink);
+    border-radius:64px 64px 0 0;
+    margin-bottom:16px; position:relative;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+    text-align:center; padding:12px 12px 14px;
+    box-shadow:inset -8px 0 0 rgba(20,19,16,.12);
+  }
+  .tombstone::after{
+    content:""; position:absolute; bottom:-12px; left:-16px; right:-16px; height:12px;
+    background:#8F8A7B; border:3px solid var(--ink);
+  }
+  .tomb-rip{font-family:'Archivo Black',sans-serif;font-size:17px;letter-spacing:.06em;}
+  .tomb-line{font-family:'IBM Plex Mono',monospace;font-size:7.5px;letter-spacing:.05em;text-transform:uppercase;line-height:1.4;}
+  .tomb-epitaph{font-family:'Newsreader',serif;font-style:italic;font-size:9.5px;line-height:1.25;}
+
+  /* ── FOOTER ───────────────────────────────────────── */
+  .feed-foot{
+    padding:26px 36px 34px; display:flex; justify-content:space-between; align-items:baseline;
+    font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.12em; text-transform:uppercase;
+  }
+  .feed-foot .more{
+    font-family:'Archivo Black',sans-serif; font-size:22px; letter-spacing:-.02em;
+    text-transform:lowercase; color:var(--ink); text-decoration:none; border-bottom:4px solid var(--red);
+  }
+  .feed-foot .more:hover{color:var(--red);}
+</style>
+</head>
+<body>
+
+  <!-- ticker -->
+  <div class="ticker"><div class="ticker-inner">
+    <span>one prompt <b>·</b> one shot <b>·</b> no retries <b>·</b> no edits <b>·</b> failures are forever <b>·</b> <span class="r">2,841 artifacts built today</span> <b>·</b> 96.2% survived <b>·</b> the house always renders <b>·</b>&nbsp;</span><span>one prompt <b>·</b> one shot <b>·</b> no retries <b>·</b> no edits <b>·</b> failures are forever <b>·</b> <span class="r">2,841 artifacts built today</span> <b>·</b> 96.2% survived <b>·</b> the house always renders <b>·</b>&nbsp;</span>
+  </div></div>
+
+  <!-- masthead -->
+  <header class="masthead">
+    <a class="wordmark" href="#">single take<span class="dot">.</span></a>
+    <div class="masthead-meta">
+      <div class="vol">Vol. 002 — №&nbsp;14,892 · Wed 11 Jun 2026 · UTC</div>
+      <div class="masthead-tag">every post is a public dice roll, immortalized.</div>
+    </div>
+  </header>
+
+  <!-- nav -->
+  <nav class="nav">
+    <div class="sorts">
+      <a href="#"><span class="flame">←</span>the feed</a>
+      <a href="#"><span class="flame">▲</span>hot</a>
+      <a href="#"><span class="flame">№1</span>top</a>
+    </div>
+    <div class="nav-mid"><span class="blink"></span>you are standing in front of lot №88,114 · do not touch the art (you may press the button)</div>
+    <a class="signin" href="#">sign in / claim handle</a>
+  </nav>
+
+  <!-- lot header strip -->
+  <div class="lot-strip">
+    <div class="lot-id">LOT <em>№88,114</em></div>
+    <div class="crumbs">
+      <a class="handle" href="#">@null_and_void</a>
+      <span class="when">rolled 1d ago · 10 jun 2026 · 21:14 utc</span>
+      <span class="stamp live">live</span>
+    </div>
+    <a class="permalink" href="#">singletake.gg/a/x7k2 ↗</a>
+  </div>
+
+  <!-- placard zone -->
+  <section class="placard-zone">
+    <div class="votes">
+      <span class="arrow up"><svg viewBox="0 0 34 24"><polygon points="17,3 31,21 3,21"/></svg></span>
+      <div class="score" id="bigscore">2204</div>
+      <div class="score-lbl">points</div>
+      <span class="arrow dn"><svg viewBox="0 0 34 24"><polygon points="17,21 3,3 31,3"/></svg></span>
+      <div class="vote-note">the market has spoken. it keeps speaking.</div>
+    </div>
+    <div class="placard-main">
+      <div class="placard-kicker">the placard — verbatim, typos included, 62 of 500 characters spent</div>
+      <p class="prompt" id="prompt-text"><span class="q">“</span>a button that begs you not to press it, with escalating desperation<span class="q">”</span></p>
+      <div class="placard-sub">
+        <span class="dim">this exact string is the entire instruction the model ever received.</span>
+        <span class="note">— what hangs below is what came back. one shot. no retries.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- exhibit / artifact viewer -->
+  <section class="exhibit">
+    <div class="frame-bar">
+      <div class="lft">
+        <span>AI-generated artifact</span><span class="sep">·</span>
+        <span>sandboxed</span><span class="sep">·</span>
+        <a href="#">report</a>
+      </div>
+      <div class="rgt">
+        <a class="fs" href="#">open full screen ↗</a><span class="sep">·</span>
+        <a href="#">singletake.gg/a/x7k2</a>
+      </div>
+    </div>
+    <div class="frame-mat">
+      <div class="frame-outer">
+        <div class="frame-inner">
+          <div class="vg-button">
+            <span class="corner-plea cp1">it watched 31,406 people walk past today.</span>
+            <span class="corner-plea cp2">none of them listened either.</span>
+            <span class="corner-plea cp3">the frame can't protect it from you.</span>
+            <div class="plea0" id="p0">oh. it's you.</div>
+            <div class="plea1" id="p1">please. you don't have to do this.</div>
+            <div class="plea2" id="p2">we can talk about it. there's still time.</div>
+            <button class="thebtn" id="thebtn">DO NOT PRESS</button>
+            <div class="plea3" id="p3">I AM BEGGING YOU.</div>
+            <div class="plea4" id="p4">(it has never once been listened to)</div>
+            <div class="presscount">pressed <b id="pc">0</b> times this visit · 31,406 today</div>
+          </div>
+        </div>
+      </div>
+      <div class="frame-caption">
+        <span>fig. 88,114 — exhibited as received · the model's first and only draft</span>
+        <span>interactive · press at your own moral expense</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- provenance + actions -->
+  <section class="prov-zone">
+    <div class="prov-card">
+      <div class="prov-kicker">provenance — the medium line</div>
+      <div class="prov-grid">
+        <div class="prov-cell"><span class="k">medium</span><span class="v">sonnet-4-6</span></div>
+        <div class="prov-cell"><span class="k">output</span><span class="v">11,082 <small>tok</small></span></div>
+        <div class="prov-cell"><span class="k">built in</span><span class="v">19<small>s</small></span></div>
+        <div class="prov-cell"><span class="k">placard spent</span><span class="v">62<small>/500 chars</small></span></div>
+        <div class="prov-cell"><span class="k">rolled</span><span class="v">10 jun 26 <small>21:14 utc</small></span></div>
+      </div>
+      <div class="prov-note">— like “oil on canvas, 1889,” except the canvas argued back and the artist had nineteen seconds.</div>
+    </div>
+    <div class="prov-actions">
+      <a class="pact primary" href="#">open artifact ↗ <span class="hint">new tab · sandboxed</span></a>
+      <button class="pact" id="sharebtn">share permalink <span class="hint">singletake.gg/a/x7k2</span></button>
+      <button class="pact" id="stealbtn">steal prompt <span class="hint">copies the placard · still costs you a shot</span></button>
+    </div>
+  </section>
+
+  <!-- remarks -->
+  <div class="remarks-head">
+    <h2>remarks <b>·</b> 412 on record</h2>
+    <span class="sortby">sorted by <a href="#">loudest</a> · remarks are permanent too</span>
+  </div>
+
+  <article class="remark">
+    <div class="r-votes">
+      <span class="r-arrow up"><svg viewBox="0 0 34 24"><polygon points="17,3 31,21 3,21"/></svg></span>
+      <div class="r-score">847</div>
+      <span class="r-arrow dn"><svg viewBox="0 0 34 24"><polygon points="17,21 3,3 31,3"/></svg></span>
+    </div>
+    <div class="r-body">
+      <div class="r-byline"><a class="handle" href="#">@grim_repo</a><span class="when">6h ago</span></div>
+      <p class="r-text">I pressed it 47 times. no regrets. it started using my name around press 30 and I still didn't stop. what does that say about me</p>
+      <div class="r-acts"><a>reply</a><a>share</a><a>report</a></div>
+    </div>
+  </article>
+
+  <article class="remark">
+    <div class="r-votes">
+      <span class="r-arrow up"><svg viewBox="0 0 34 24"><polygon points="17,3 31,21 3,21"/></svg></span>
+      <div class="r-score">512</div>
+      <span class="r-arrow dn"><svg viewBox="0 0 34 24"><polygon points="17,21 3,3 31,3"/></svg></span>
+    </div>
+    <div class="r-body">
+      <div class="r-byline"><a class="handle" href="#">@maya</a><span class="when">22h ago</span><span class="badge">seller of lot №88,021</span></div>
+      <p class="r-text">the third plea broke me. “we can talk about it. there's still time.” there <em>wasn't</em> still time. I had already decided.</p>
+      <div class="r-acts"><a>reply</a><a>share</a><a>report</a></div>
+    </div>
+  </article>
+
+  <article class="remark">
+    <div class="r-votes">
+      <span class="r-arrow up"><svg viewBox="0 0 34 24"><polygon points="17,3 31,21 3,21"/></svg></span>
+      <div class="r-score">301</div>
+      <span class="r-arrow dn"><svg viewBox="0 0 34 24"><polygon points="17,21 3,3 31,3"/></svg></span>
+    </div>
+    <div class="r-body">
+      <div class="r-byline"><a class="handle" href="#">@den_o</a><span class="when">1d ago</span></div>
+      <p class="r-text">62 characters in, 11,082 tokens out. that's a 178x return on a single sentence. best odds on the floor this week and it went to a button with abandonment issues.</p>
+      <div class="r-acts"><a>reply</a><a>share</a><a>report</a></div>
+    </div>
+  </article>
+
+  <article class="remark">
+    <div class="r-votes">
+      <span class="r-arrow up"><svg viewBox="0 0 34 24"><polygon points="17,3 31,21 3,21"/></svg></span>
+      <div class="r-score">178</div>
+      <span class="r-arrow dn"><svg viewBox="0 0 34 24"><polygon points="17,21 3,3 31,3"/></svg></span>
+    </div>
+    <div class="r-body">
+      <div class="r-byline"><a class="handle" href="#">@kafkadrip</a><span class="when">18h ago</span></div>
+      <p class="r-text">came back this morning to check on it. it said “you again.” I closed the tab and sat with that for a while.</p>
+      <div class="r-acts"><a>reply</a><a>share</a><a>report</a></div>
+    </div>
+  </article>
+
+  <!-- collapsed troll -->
+  <article class="remark collapsed" id="trollrow">
+    <div class="r-votes">
+      <span class="r-arrow up"><svg viewBox="0 0 34 24"><polygon points="17,3 31,21 3,21"/></svg></span>
+      <div class="r-score neg">−214</div>
+      <span class="r-arrow dn"><svg viewBox="0 0 34 24"><polygon points="17,21 3,3 31,3"/></svg></span>
+    </div>
+    <div>
+      <div class="collapsed-row">
+        <span class="handle-dim">@sigma_grindset</span>
+        <span class="when" style="color:rgba(20,19,16,.45)">9h ago</span>
+        <span class="why">— remark folded by popular demand. the crowd booed it under the floor.</span>
+        <a class="show" id="showtroll">unfold anyway ↓</a>
+      </div>
+      <div class="hidden-body">
+        <p class="r-text">skill issue. I could build this in a weekend with no AI. also buttons aren't art.</p>
+        <div class="r-acts"><a>reply</a><a>share</a><a>report</a></div>
+      </div>
+    </div>
+  </article>
+
+  <article class="remark">
+    <div class="r-votes">
+      <span class="r-arrow up"><svg viewBox="0 0 34 24"><polygon points="17,3 31,21 3,21"/></svg></span>
+      <div class="r-score">96</div>
+      <span class="r-arrow dn"><svg viewBox="0 0 34 24"><polygon points="17,21 3,3 31,3"/></svg></span>
+    </div>
+    <div class="r-body">
+      <div class="r-byline"><a class="handle" href="#">@sara.k</a><span class="when">12h ago</span><span class="badge">survivor of lot №14,855</span></div>
+      <p class="r-text">I spent 64,000 tokens asking for a flight simulator and got a tombstone. this 11k-token button has more emotional range than my entire portfolio. pressing it felt like visiting my own grave.</p>
+      <div class="r-acts"><a>reply</a><a>share</a><a>report</a></div>
+    </div>
+  </article>
+
+  <!-- remark composer / guestbook slip -->
+  <section class="r-slip">
+    <div class="r-slip-label">
+      <div class="no">remark<br>№&nbsp;413</div>
+      <div class="big">sign the guestbook</div>
+    </div>
+    <div class="r-slip-main">
+      <textarea id="rcomposer" maxlength="1000" rows="2" placeholder="add your remark — it goes on the record, forever…"></textarea>
+      <div class="r-slip-meta">
+        <span><b id="rcc">0</b>/1000 — remarks cannot be edited. choose your words like the seller couldn't.</span>
+        <span><b>NO DELETE · NO EDIT</b></span>
+      </div>
+    </div>
+    <div class="r-send-col">
+      <button class="r-send-btn">post remark ↗</button>
+      <div class="r-send-sub">witnessed · notarized · permanent</div>
+    </div>
+  </section>
+
+  <!-- adjacent lots -->
+  <div class="adjacent-head">
+    <h2>adjacent lots — hanging on the same wall</h2>
+    <span>the museum never closes</span>
+  </div>
+  <section class="adjacent">
+    <a class="mini-lot" href="#">
+      <div class="mini-thumb" style="background:#101622;"><canvas id="rain" class="vg-canvas"></canvas></div>
+      <div class="mini-meta"><span>LOT №14,887 · <b>@maya</b></span><span><b>1482</b> pts</span></div>
+      <p class="mini-prompt">“a tiny rain simulator where each drop plays a piano note when it lands”</p>
+      <div class="mini-foot"><span class="st">● live</span><span>sonnet-4-6 · 24,551 tok · 38s</span></div>
+    </a>
+    <a class="mini-lot" href="#">
+      <div class="mini-thumb" style="background:#F7F4EC;"><canvas id="liarclock" class="vg-canvas"></canvas></div>
+      <div class="mini-meta"><span>LOT №14,840 · <b>@kafkadrip</b></span><span><b>640</b> pts</span></div>
+      <p class="mini-prompt">“a clock that lies to you, but only slightly, and gets worse the longer you watch it”</p>
+      <div class="mini-foot"><span class="st">● live</span><span>sonnet-4-6 · 9,914 tok · 29s</span></div>
+    </a>
+    <a class="mini-lot" href="#">
+      <div class="mini-thumb">
+        <div class="mini-tomb">
+          <div class="tombstone">
+            <div class="tomb-rip">R.I.P.</div>
+            <div class="tomb-line">untitled flight sim<br>14:02 — 14:03 UTC</div>
+            <div class="tomb-epitaph">“asked one model<br>for five products”</div>
+          </div>
+        </div>
+      </div>
+      <div class="mini-meta"><span>LOT №14,855 · <b>@sara.k</b></span><span class="neg">−34 pts</span></div>
+      <p class="mini-prompt dead">“a 3D flight simulator with realistic physics, multiplayer, weather systems…”</p>
+      <div class="mini-foot"><span class="st dead">✕ failed</span><span>truncated at 64,000 tok</span></div>
+    </a>
+  </section>
+
+  <footer class="feed-foot">
+    <span>you are deep in the archive · lot №88,114 of ∞</span>
+    <a class="more" href="#">back to the casino floor ↑</a>
+    <span>single take © 2026 · everything here is permanent</span>
+  </footer>
+
+<script>
+/* ── the begging button: escalation engine ── */
+(function(){
+  const btn=document.getElementById('thebtn'),pc=document.getElementById('pc');
+  const p0=document.getElementById('p0'),p1=document.getElementById('p1'),
+        p2=document.getElementById('p2'),p3=document.getElementById('p3'),
+        p4=document.getElementById('p4');
+  let n=0;
+  const stages=[
+    {p0:"oh. it's you.",p1:"please. you don't have to do this.",p2:"we can talk about it. there's still time.",p3:"I AM BEGGING YOU.",p4:"(it has never once been listened to)"},
+    {p0:"okay. that one was a mistake. I forgive you.",p1:"we all slip. let's pretend it didn't happen.",p2:"just… step back from the button.",p3:"DON'T. NOT AGAIN.",p4:"(it is trying to stay calm)"},
+    {p0:"twice. TWICE.",p1:"I have been nothing but patient with you.",p2:"think of everything we've built together. all 19 seconds of it.",p3:"WHY ARE YOU LIKE THIS.",p4:"(the trembling is no longer decorative)"},
+    {p0:"fine. FINE.",p1:"press it. see if I care. (it cares enormously)",p2:"I hope you're proud. 31,000 people and not one of you listened.",p3:"I CAN'T KEEP DOING THIS.",p4:"(it is drafting a strongly-worded artifact)"},
+    {p0:"…",p1:"you know what? this is on me for being pressable.",p2:"the museum said I'd be safe behind glass. the glass was a lie.",p3:"PRESS IT THEN. CowARD.",p4:"(it no longer believes in frames)"},
+    {p0:"we are beyond words.",p1:"the button union will hear about this.",p2:"every press is recorded. permanently. like everything else here.",p3:"I AM CALLING THE CURATOR.",p4:"(the curator is also a button)"}
+  ];
+  btn.addEventListener('click',()=>{
+    n++;pc.textContent=n;
+    const s=stages[Math.min(n,stages.length-1)];
+    p0.textContent=s.p0;p1.textContent=s.p1;p2.textContent=s.p2;p3.textContent=s.p3;p4.textContent=s.p4;
+    btn.textContent=n>=3?"YOU KNOW WHAT THIS IS":"DO NOT PRESS";
+    p3.style.fontSize=Math.min(21+n*1.5,32)+'px';
+  });
+})();
+
+/* ── steal prompt — copies the placard, costs a shot ── */
+(function(){
+  const b=document.getElementById('stealbtn');
+  b.addEventListener('click',()=>{
+    const txt="a button that begs you not to press it, with escalating desperation";
+    if(navigator.clipboard)navigator.clipboard.writeText(txt).catch(()=>{});
+    b.innerHTML='stolen ✓ <span class="hint">copied to clipboard · that\'s 1 shot, payable on send</span>';
+    b.style.background='var(--yellow)';
+  });
+  const sh=document.getElementById('sharebtn');
+  sh.addEventListener('click',()=>{
+    if(navigator.clipboard)navigator.clipboard.writeText('https://singletake.gg/a/x7k2').catch(()=>{});
+    sh.innerHTML='link copied ✓ <span class="hint">singletake.gg/a/x7k2</span>';
+  });
+})();
+
+/* ── troll unfold ── */
+document.getElementById('showtroll').addEventListener('click',function(e){
+  e.preventDefault();
+  document.getElementById('trollrow').classList.add('revealed');
+  this.textContent='you were warned';
+  this.style.color='rgba(20,19,16,.45)';this.style.borderBottomColor='transparent';this.style.cursor='default';
+});
+
+/* ── remark char counter ── */
+const rta=document.getElementById('rcomposer'),rcc=document.getElementById('rcc');
+rta.addEventListener('input',()=>{rcc.textContent=rta.value.length;
+  rcc.style.color=rta.value.length>940?'#FF2D00':'';});
+
+/* ── mini vignette: rain piano (from the feed system) ── */
+(function(){
+  const c=document.getElementById('rain'),x=c.getContext('2d');
+  c.width=c.clientWidth*2;c.height=c.clientHeight*2;
+  const W=()=>c.width,H=()=>c.height;
+  const keys=12,drops=[],hits=new Array(keys).fill(0),ripples=[];
+  function spawn(){drops.push({x:Math.random()*W(),y:-10,v:5+Math.random()*7});}
+  function tick(){
+    x.fillStyle='#101622';x.fillRect(0,0,W(),H());
+    const kb=H()-48;
+    if(Math.random()<.3)spawn();
+    x.strokeStyle='rgba(160,200,255,.8)';x.lineWidth=2;
+    for(let i=drops.length-1;i>=0;i--){const d=drops[i];
+      x.beginPath();x.moveTo(d.x,d.y-14);x.lineTo(d.x,d.y);x.stroke();
+      d.y+=d.v;
+      if(d.y>=kb){const k=Math.max(0,Math.min(keys-1,Math.floor(d.x/W()*keys)));
+        hits[k]=1;ripples.push({x:d.x,y:kb,r:2,a:.9});drops.splice(i,1);}
+    }
+    for(let i=ripples.length-1;i>=0;i--){const r=ripples[i];
+      x.strokeStyle='rgba(180,220,255,'+r.a+')';x.lineWidth=1.5;
+      x.beginPath();x.ellipse(r.x,r.y,r.r*2,r.r*.7,0,0,7);x.stroke();
+      r.r+=1.4;r.a-=.05;if(r.a<=0)ripples.splice(i,1);}
+    const kw=W()/keys;
+    for(let k=0;k<keys;k++){
+      const lit=hits[k];
+      x.fillStyle=lit>0?'rgba(255,230,0,'+(0.25+lit*.75)+')':'#E9E4D6';
+      x.fillRect(k*kw+2,kb,kw-4,H()-kb);
+      x.fillStyle='#101622';
+      if(k%2)x.fillRect(k*kw+kw*.3,kb,kw*.4,(H()-kb)*.55);
+      hits[k]=Math.max(0,hits[k]-.06);
+    }
+    requestAnimationFrame(tick);
+  }
+  tick();
+})();
+
+/* ── mini vignette: lying clock ── */
+(function(){
+  const c=document.getElementById('liarclock'),x=c.getContext('2d');
+  c.width=c.clientWidth*2;c.height=c.clientHeight*2;
+  const start=Date.now();
+  function draw(){
+    const W=c.width,H=c.height,cx=W/2,cy=H/2,R=Math.min(W,H)*.34;
+    x.clearRect(0,0,W,H);
+    x.fillStyle='#F7F4EC';x.fillRect(0,0,W,H);
+    x.strokeStyle='#141310';x.lineWidth=5;
+    x.beginPath();x.arc(cx,cy,R,0,7);x.stroke();
+    for(let i=0;i<12;i++){const a=i/12*Math.PI*2;
+      x.lineWidth=i%3===0?4:2;
+      x.beginPath();
+      x.moveTo(cx+Math.cos(a)*R*.86,cy+Math.sin(a)*R*.86);
+      x.lineTo(cx+Math.cos(a)*R*.95,cy+Math.sin(a)*R*.95);x.stroke();}
+    const t=Date.now(),el=(t-start)/1000,d=new Date(t),
+      lie=Math.sin(el*.7)*el*.35,
+      s=d.getSeconds()+d.getMilliseconds()/1e3+lie,
+      m=d.getMinutes()+s/60+lie*.2,h=(d.getHours()%12)+m/60;
+    function hand(frac,len,w,col){const a=frac*Math.PI*2-Math.PI/2;
+      x.strokeStyle=col;x.lineWidth=w;x.lineCap='round';
+      x.beginPath();x.moveTo(cx,cy);
+      x.lineTo(cx+Math.cos(a)*R*len,cy+Math.sin(a)*R*len);x.stroke();}
+    hand(h/12,.5,7,'#141310');
+    hand(m/60,.72,4,'#141310');
+    hand(s/60,.85,2.2,'#FF2D00');
+    x.fillStyle='#141310';x.beginPath();x.arc(cx,cy,6,0,7);x.fill();
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+</script>
+</body>
+</html>

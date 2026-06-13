@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<!--
+  BENCHMARK TRANSPLANT: Are.na (are.na) — the canonical anti-social social network.
+  WHY: single take is a permanent museum of one-shot attempts; Are.na is the web's most
+  respected archival, anti-engagement interface. Its language — paper-white ground,
+  1px hairline rules instead of cards, Arial-grade typographic honesty (here: Arimo,
+  the metric Arial clone on Google Fonts), monochrome restraint, content laid out
+  like a catalog table — maps perfectly onto "the prompt is the placard."
+  TRANSPLANT MOVES (not a clone):
+  - Are.na's hairline-ruled block grid becomes a museum catalog: each post is a
+    ledger row with an accession number (№), a Times-style placard (Tinos italic),
+    and a provenance line set in IBM Plex Mono like a wall label.
+  - Are.na's near-total monochrome is kept; the ONLY colors are status inks:
+    a small green LIVE dot, amber hatching for BUILDING, gray for the FAILED grave.
+  - Are.na's refusal of soft shadows / rounded gray cards is obeyed strictly:
+    everything is flat, square, 1px-ruled, white.
+  - Votes exist (single take's anatomy) but are typeset like catalog marginalia,
+    not Reddit chrome.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>single take — global feed</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400;0,500;0,700;1,400&family=Tinos:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#161616;
+    --gray:#757575;
+    --faint:#9b9b9b;
+    --rule:#d9d9d9;
+    --rule-dark:#161616;
+    --paper:#ffffff;
+    --ground:#f7f7f5;
+    --live:#1ba94c;
+    --amber:#b07d00;
+    --mono:'IBM Plex Mono',monospace;
+    --sans:'Arimo',Arial,sans-serif;
+    --serif:'Tinos','Times New Roman',serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{background:var(--ground);}
+  body{
+    font-family:var(--sans);
+    color:var(--ink);
+    font-size:14px;
+    line-height:1.45;
+    -webkit-font-smoothing:antialiased;
+  }
+  .frame{
+    max-width:1296px;
+    margin:0 auto;
+    background:var(--paper);
+    border-left:1px solid var(--rule-dark);
+    border-right:1px solid var(--rule-dark);
+    min-height:100vh;
+  }
+
+  /* ============ HEADER ============ */
+  header{
+    border-bottom:1px solid var(--rule-dark);
+    display:flex;
+    align-items:stretch;
+  }
+  .brand{
+    padding:18px 28px;
+    border-right:1px solid var(--rule-dark);
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+  }
+  .brand .mark{
+    font-family:var(--sans);
+    font-weight:700;
+    font-size:24px;
+    letter-spacing:-0.02em;
+  }
+  .brand .mark sup{
+    font-size:13px;
+    font-weight:400;
+    vertical-align:super;
+  }
+  .brand .tag{
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--gray);
+  }
+  nav{
+    display:flex;
+    align-items:stretch;
+    flex:1;
+  }
+  nav a.sort{
+    display:flex;
+    align-items:center;
+    padding:0 26px;
+    font-family:var(--mono);
+    font-size:13px;
+    color:var(--gray);
+    text-decoration:none;
+    border-right:1px solid var(--rule);
+  }
+  nav a.sort.active{
+    color:var(--ink);
+    background:var(--ink);
+    color:#fff;
+    border-right:1px solid var(--rule-dark);
+  }
+  nav a.sort:hover{color:var(--ink);}
+  nav a.sort.active:hover{color:#fff;}
+  .header-right{
+    margin-left:auto;
+    display:flex;
+    align-items:stretch;
+  }
+  .utc{
+    display:flex;
+    align-items:center;
+    padding:0 22px;
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--faint);
+    border-left:1px solid var(--rule);
+  }
+  a.signin{
+    display:flex;
+    align-items:center;
+    padding:0 28px;
+    border-left:1px solid var(--rule-dark);
+    font-family:var(--mono);
+    font-size:13px;
+    color:var(--ink);
+    text-decoration:none;
+  }
+  a.signin:hover{background:var(--ink);color:#fff;}
+
+  /* ============ MANIFESTO STRAP ============ */
+  .strap{
+    border-bottom:1px solid var(--rule-dark);
+    padding:10px 28px;
+    font-family:var(--mono);
+    font-size:11.5px;
+    color:var(--gray);
+    display:flex;
+    justify-content:space-between;
+  }
+  .strap b{color:var(--ink);font-weight:500;}
+
+  /* ============ COMPOSER ============ */
+  .composer{
+    border-bottom:1px solid var(--rule-dark);
+    display:grid;
+    grid-template-columns:84px 1fr 220px;
+  }
+  .composer .rail{
+    border-right:1px solid var(--rule);
+    padding:22px 0;
+    text-align:center;
+    font-family:var(--mono);
+    font-size:10px;
+    color:var(--faint);
+    text-transform:uppercase;
+    letter-spacing:0.12em;
+    writing-mode:vertical-rl;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .composer .well{
+    padding:24px 30px 20px;
+  }
+  .composer textarea{
+    width:100%;
+    border:none;
+    outline:none;
+    resize:none;
+    font-family:var(--serif);
+    font-style:italic;
+    font-size:24px;
+    line-height:1.35;
+    color:var(--ink);
+    height:78px;
+    background:transparent;
+  }
+  .composer textarea::placeholder{color:#c3c3c3;}
+  .composer .counter-row{
+    display:flex;
+    gap:24px;
+    align-items:baseline;
+    margin-top:10px;
+    font-family:var(--mono);
+    font-size:11.5px;
+    color:var(--gray);
+  }
+  .composer .counter-row .chars b{color:var(--ink);font-weight:500;}
+  .composer .warning{
+    color:var(--faint);
+    margin-left:auto;
+  }
+  .composer .fire{
+    border-left:1px solid var(--rule-dark);
+    display:flex;
+    flex-direction:column;
+  }
+  .shots{
+    flex:1;
+    padding:18px 22px;
+    font-family:var(--mono);
+    font-size:11.5px;
+    color:var(--gray);
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    justify-content:center;
+  }
+  .shots .pips{
+    display:flex;
+    gap:6px;
+  }
+  .shots .pip{
+    width:14px;height:14px;
+    border:1px solid var(--ink);
+  }
+  .shots .pip.loaded{background:var(--ink);}
+  .shots .pip.spent{
+    background:repeating-linear-gradient(45deg,transparent,transparent 2px,var(--rule) 2px,var(--rule) 4px);
+    border-color:var(--rule);
+  }
+  button.sendit{
+    border:none;
+    border-top:1px solid var(--rule-dark);
+    background:var(--ink);
+    color:#fff;
+    font-family:var(--mono);
+    font-size:15px;
+    padding:18px;
+    cursor:pointer;
+    text-align:left;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+  button.sendit:hover{background:#000;}
+  button.sendit .arr{font-size:17px;}
+
+  /* ============ FEED ============ */
+  .feed-head{
+    display:grid;
+    grid-template-columns:84px 1fr 408px;
+    border-bottom:1px solid var(--rule);
+    font-family:var(--mono);
+    font-size:10px;
+    text-transform:uppercase;
+    letter-spacing:0.14em;
+    color:var(--faint);
+  }
+  .feed-head>div{padding:8px 0 8px 0;text-align:center;}
+  .feed-head .h-placard{text-align:left;padding-left:30px;border-left:1px solid var(--rule);}
+  .feed-head .h-art{border-left:1px solid var(--rule);}
+
+  article.post{
+    display:grid;
+    grid-template-columns:84px 1fr 408px;
+    border-bottom:1px solid var(--rule-dark);
+  }
+  /* vote rail */
+  .vote{
+    border-right:1px solid var(--rule);
+    padding:24px 0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:6px;
+    font-family:var(--mono);
+  }
+  .vote .v{
+    font-size:13px;
+    color:var(--faint);
+    cursor:pointer;
+    line-height:1;
+    text-decoration:none;
+  }
+  .vote .v:hover{color:var(--ink);}
+  .vote .score{
+    font-size:15px;
+    font-weight:500;
+    color:var(--ink);
+  }
+  .vote .score.neg{color:var(--gray);}
+
+  /* placard */
+  .placard{
+    padding:22px 34px 20px 30px;
+    display:flex;
+    flex-direction:column;
+  }
+  .byline{
+    font-family:var(--mono);
+    font-size:11.5px;
+    color:var(--gray);
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .byline .handle{color:var(--ink);font-weight:500;text-decoration:none;}
+  .byline .acc{color:var(--faint);}
+  .status{
+    font-family:var(--mono);
+    font-size:10px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    padding:2px 7px;
+    border:1px solid currentColor;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+  }
+  .status.live{color:var(--live);}
+  .status.live .dot{width:6px;height:6px;border-radius:50%;background:var(--live);}
+  .status.building{
+    color:var(--amber);
+    background:repeating-linear-gradient(45deg,transparent,transparent 4px,rgba(176,125,0,0.12) 4px,rgba(176,125,0,0.12) 8px);
+  }
+  .status.building .dot{width:6px;height:6px;background:var(--amber);animation:blink 0.9s steps(2) infinite;}
+  @keyframes blink{to{opacity:0;}}
+  .status.failed{color:var(--gray);text-decoration:line-through;text-decoration-thickness:1px;}
+
+  .prompt{
+    font-family:var(--serif);
+    font-style:italic;
+    font-size:27px;
+    line-height:1.28;
+    margin:14px 0 0;
+    color:var(--ink);
+    letter-spacing:0.002em;
+    max-width:620px;
+  }
+  .prompt::before{content:"\201C";color:var(--faint);}
+  .prompt::after{content:"\201D";color:var(--faint);}
+
+  .provenance{
+    margin-top:auto;
+    padding-top:18px;
+    font-family:var(--mono);
+    font-size:11.5px;
+    color:var(--gray);
+    display:flex;
+    gap:0;
+    flex-wrap:wrap;
+    align-items:baseline;
+  }
+  .provenance span.kv{padding-right:14px;margin-right:14px;border-right:1px solid var(--rule);}
+  .provenance span.kv:last-of-type{border-right:none;}
+  .provenance b{color:var(--ink);font-weight:500;}
+  .actions{
+    margin-top:10px;
+    font-family:var(--mono);
+    font-size:11.5px;
+    display:flex;
+    gap:22px;
+  }
+  .actions a{color:var(--gray);text-decoration:none;}
+  .actions a:hover{color:var(--ink);text-decoration:underline;}
+  .actions a.open{color:var(--ink);}
+  .permalink{color:var(--faint);}
+
+  /* artifact preview column */
+  .art{
+    border-left:1px solid var(--rule-dark);
+    position:relative;
+    overflow:hidden;
+    min-height:236px;
+    background:var(--paper);
+  }
+  .art .caption{
+    position:absolute;
+    left:0;right:0;bottom:0;
+    padding:6px 14px;
+    font-family:var(--mono);
+    font-size:10px;
+    color:var(--faint);
+    border-top:1px solid var(--rule);
+    background:rgba(255,255,255,0.92);
+    display:flex;
+    justify-content:space-between;
+    z-index:5;
+  }
+
+  /* --- preview 1: pleading button --- */
+  .pv-beg{
+    height:100%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:9px;
+    background:#f2f2ef;
+    padding-bottom:26px;
+  }
+  .pv-beg .ghost{
+    font-family:var(--mono);
+    font-size:10px;
+    color:#c0c0bb;
+  }
+  .pv-beg .ghost.g2{color:#a8a8a2;font-size:11px;}
+  .pv-beg .bigbtn{
+    font-family:var(--mono);
+    font-size:13px;
+    border:1px solid var(--ink);
+    background:#fff;
+    padding:11px 22px;
+    box-shadow:3px 3px 0 var(--ink);
+    cursor:pointer;
+    animation:tremble 0.28s infinite;
+  }
+  @keyframes tremble{
+    0%,100%{transform:translate(0,0);}
+    25%{transform:translate(-0.6px,0.4px);}
+    75%{transform:translate(0.6px,-0.4px);}
+  }
+  .pv-beg .tally{
+    font-family:var(--mono);
+    font-size:10px;
+    color:var(--gray);
+  }
+
+  /* --- preview 2: rain piano --- */
+  .pv-rain{height:100%;position:relative;background:#10141c;}
+  .pv-rain canvas{display:block;width:100%;height:100%;}
+  .pv-rain .keys{
+    position:absolute;left:0;right:0;bottom:26px;
+    height:26px;display:flex;
+  }
+  .pv-rain .keys i{flex:1;background:#f4f4f0;border-right:1px solid #10141c;}
+  .pv-rain .keys i.b{background:#10141c;flex:0.6;margin:0 -3% 9px;z-index:2;}
+  .pv-rain .note{
+    position:absolute;
+    font-family:var(--mono);
+    font-size:9px;
+    color:#8fa3c8;
+  }
+
+  /* --- preview 3: building hatch --- */
+  .pv-building{
+    height:100%;
+    background:repeating-linear-gradient(-45deg,#fff,#fff 9px,#f3ecdc 9px,#f3ecdc 18px);
+    background-size:200% 200%;
+    animation:hatch 1.2s linear infinite;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    padding-bottom:26px;
+  }
+  @keyframes hatch{from{background-position:0 0;}to{background-position:25.5px 0;}}
+  .pv-building .slot{
+    font-family:var(--mono);
+    font-size:20px;
+    letter-spacing:0.18em;
+    color:var(--ink);
+    border:1px solid var(--ink);
+    background:#fff;
+    padding:10px 16px;
+  }
+  .pv-building .slot span{display:inline-block;animation:spinch 0.5s steps(4) infinite;}
+  .pv-building .slot span:nth-child(2n){animation-duration:0.7s;}
+  .pv-building .slot span:nth-child(3n){animation-duration:0.4s;}
+  @keyframes spinch{0%{transform:translateY(0);}50%{transform:translateY(-1px);}100%{transform:translateY(0);}}
+  .pv-building .elapsed{
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--amber);
+  }
+  .pv-building .sub{
+    font-family:var(--mono);
+    font-size:10px;
+    color:var(--gray);
+  }
+
+  /* --- preview 4: universe timeline --- */
+  .pv-universe{height:100%;position:relative;padding-bottom:26px;background:#fff;}
+  .pv-universe .band{
+    position:absolute;inset:0 0 26px 0;
+    background:linear-gradient(90deg,
+      #fffdf2 0%, #ffe9a8 6%, #ffb45e 14%, #e96b3a 24%,
+      #a43a8c 38%, #4b3aa4 52%, #1c2f6e 66%, #0c1838 80%, #04060f 92%, #000 100%);
+  }
+  .pv-universe .tick{
+    position:absolute;
+    top:0;bottom:26px;
+    width:1px;
+    background:rgba(255,255,255,0.55);
+  }
+  .pv-universe .tick i{
+    position:absolute;
+    top:8px;left:5px;
+    font-style:normal;
+    font-family:var(--mono);
+    font-size:8.5px;
+    color:#fff;
+    white-space:nowrap;
+    text-shadow:0 0 4px rgba(0,0,0,0.5);
+  }
+  .pv-universe .tick.dark i{color:#5c4a16;text-shadow:none;}
+  .pv-universe .you{
+    position:absolute;
+    bottom:38px;left:71%;
+    font-family:var(--mono);
+    font-size:8.5px;
+    color:#fff;
+  }
+  .pv-universe .you::before{
+    content:"";
+    position:absolute;
+    left:-7px;top:3px;
+    width:4px;height:4px;
+    border-radius:50%;
+    background:#fff;
+  }
+
+  /* --- preview 5: tombstone --- */
+  .pv-grave{
+    height:100%;
+    background:#efefec;
+    display:flex;
+    align-items:flex-end;
+    justify-content:center;
+    padding-bottom:26px;
+    position:relative;
+  }
+  .pv-grave .stone{
+    width:208px;
+    background:#dcdcd6;
+    border:1px solid var(--ink);
+    border-bottom:none;
+    border-radius:104px 104px 0 0;
+    padding:30px 18px 14px;
+    text-align:center;
+    font-family:var(--mono);
+    color:#4a4a46;
+  }
+  .pv-grave .stone .cross{font-size:16px;color:var(--ink);}
+  .pv-grave .stone h4{
+    font-size:11px;
+    letter-spacing:0.14em;
+    margin:7px 0 6px;
+    color:var(--ink);
+    font-weight:500;
+  }
+  .pv-grave .stone p{font-size:9.5px;line-height:1.5;}
+  .pv-grave .stone .dates{margin-top:7px;font-size:9.5px;color:var(--gray);}
+  .pv-grave .grass{
+    position:absolute;
+    left:0;right:0;bottom:26px;
+    height:1px;
+    background:var(--ink);
+  }
+  .pv-grave .tuft{
+    position:absolute;
+    bottom:26px;
+    font-family:var(--mono);
+    font-size:9px;
+    color:#9a9a92;
+  }
+
+  /* --- preview 6: lying clock --- */
+  .pv-clock{
+    height:100%;
+    background:#fbfbf8;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:30px;
+    padding-bottom:26px;
+  }
+  .clockface{
+    width:128px;height:128px;
+    border:1px solid var(--ink);
+    border-radius:50%;
+    position:relative;
+    background:#fff;
+  }
+  .clockface .h12{position:absolute;top:6px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:9px;}
+  .clockface .h6{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:9px;}
+  .clockface .h3{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:9px;}
+  .clockface .h9{position:absolute;left:8px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:9px;}
+  .hand{
+    position:absolute;
+    left:50%;bottom:50%;
+    transform-origin:bottom center;
+    background:var(--ink);
+  }
+  .hand.hh{width:3px;height:34px;margin-left:-1.5px;transform:rotate(231deg);}
+  .hand.mm{width:1.5px;height:50px;margin-left:-0.75px;transform:rotate(118deg);}
+  .hand.ss{width:1px;height:56px;margin-left:-0.5px;background:#b3392b;transform:rotate(286deg);animation:lieahead 4s steps(7) infinite;}
+  @keyframes lieahead{to{transform:rotate(646deg);}}
+  .clockface .pin{
+    position:absolute;left:50%;top:50%;
+    width:5px;height:5px;margin:-2.5px 0 0 -2.5px;
+    background:var(--ink);border-radius:50%;
+  }
+  .pv-clock .testimony{
+    font-family:var(--mono);
+    font-size:10.5px;
+    color:var(--gray);
+    line-height:2;
+  }
+  .pv-clock .testimony b{color:var(--ink);font-weight:500;}
+  .pv-clock .testimony .lie{color:#b3392b;}
+
+  /* ============ FOOTER ============ */
+  footer{
+    padding:20px 28px 26px;
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--faint);
+    display:flex;
+    justify-content:space-between;
+  }
+</style>
+</head>
+<body>
+<div class="frame">
+
+  <!-- ============ HEADER ============ -->
+  <header>
+    <div class="brand">
+      <span class="mark">single take<sup>&#8599;</sup></span>
+      <span class="tag">a museum of first attempts</span>
+    </div>
+    <nav>
+      <a class="sort active" href="#">hot</a>
+      <a class="sort" href="#">new</a>
+      <a class="sort" href="#">top</a>
+    </nav>
+    <div class="header-right">
+      <div class="utc">88,402 artifacts &middot; 06.11.2026 &middot; 14:32 UTC</div>
+      <a class="signin" href="#">sign in &rarr;</a>
+    </div>
+  </header>
+
+  <div class="strap">
+    <span><b>one prompt &rarr; one artifact.</b> no retries. no edits. failures stay on the wall.</span>
+    <span>every link is permanent</span>
+  </div>
+
+  <!-- ============ COMPOSER ============ -->
+  <section class="composer">
+    <div class="rail">your shot</div>
+    <div class="well">
+      <textarea id="prompt-input" maxlength="500" placeholder="describe the artifact. you get one take."></textarea>
+      <div class="counter-row">
+        <span class="chars"><b id="cc">0</b> / 500</span>
+        <span class="warning">whatever you type here is the placard. forever.</span>
+      </div>
+    </div>
+    <div class="fire">
+      <div class="shots">
+        <span>2 shots left today</span>
+        <div class="pips">
+          <span class="pip loaded"></span>
+          <span class="pip loaded"></span>
+          <span class="pip spent"></span>
+        </div>
+        <span>resets 00:00 UTC</span>
+      </div>
+      <button class="sendit">send it <span class="arr">&#8599;</span></button>
+    </div>
+  </section>
+
+  <!-- ============ FEED ============ -->
+  <div class="feed-head">
+    <div>score</div>
+    <div class="h-placard">placard</div>
+    <div class="h-art">artifact</div>
+  </div>
+
+  <!-- 1 · null_and_void -->
+  <article class="post">
+    <div class="vote">
+      <a class="v" href="#">&#9650;</a>
+      <span class="score">2204</span>
+      <a class="v" href="#">&#9660;</a>
+    </div>
+    <div class="placard">
+      <div class="byline">
+        <a class="handle" href="#">@null_and_void</a>
+        <span>1d</span>
+        <span class="acc">no.88,114</span>
+        <span class="status live"><span class="dot"></span>live</span>
+      </div>
+      <p class="prompt">a button that begs you not to press it, with escalating desperation</p>
+      <div class="provenance">
+        <span class="kv">model <b>sonnet-4-6</b></span>
+        <span class="kv">output <b>11,082 tok</b></span>
+        <span class="kv">built in <b>19s</b></span>
+      </div>
+      <div class="actions">
+        <a href="#">412 comments</a>
+        <a class="open" href="#">open artifact &#8599;</a>
+        <a href="#">copy link</a>
+        <span class="permalink">singletake.net/a/x7f9q</span>
+      </div>
+    </div>
+    <div class="art">
+      <div class="pv-beg">
+        <span class="ghost">"haha, funny. okay. don't though."</span>
+        <span class="ghost g2">"I am asking you as a friend."</span>
+        <button class="bigbtn">PLEASE. WE TALKED ABOUT THIS.</button>
+        <span class="tally">pressed 48,201 times anyway</span>
+      </div>
+      <div class="caption"><span>artifact preview</span><span>interactive</span></div>
+    </div>
+  </article>
+
+  <!-- 2 · maya -->
+  <article class="post">
+    <div class="vote">
+      <a class="v" href="#">&#9650;</a>
+      <span class="score">1482</span>
+      <a class="v" href="#">&#9660;</a>
+    </div>
+    <div class="placard">
+      <div class="byline">
+        <a class="handle" href="#">@maya</a>
+        <span>2h</span>
+        <span class="acc">no.88,390</span>
+        <span class="status live"><span class="dot"></span>live</span>
+      </div>
+      <p class="prompt">a tiny rain simulator where each drop plays a piano note when it lands</p>
+      <div class="provenance">
+        <span class="kv">model <b>sonnet-4-6</b></span>
+        <span class="kv">output <b>24,551 tok</b></span>
+        <span class="kv">built in <b>38s</b></span>
+      </div>
+      <div class="actions">
+        <a href="#">23 comments</a>
+        <a class="open" href="#">open artifact &#8599;</a>
+        <a href="#">copy link</a>
+        <span class="permalink">singletake.net/a/k2m8d</span>
+      </div>
+    </div>
+    <div class="art">
+      <div class="pv-rain">
+        <canvas id="rain" width="406" height="234"></canvas>
+        <span class="note" style="left:18%;top:58%;">D&#9839;4</span>
+        <span class="note" style="left:62%;top:42%;">G3</span>
+        <span class="note" style="left:81%;top:64%;">B&#9837;5</span>
+        <div class="keys">
+          <i></i><i class="b"></i><i></i><i class="b"></i><i></i><i></i><i class="b"></i><i></i><i class="b"></i><i></i><i class="b"></i><i></i><i></i><i class="b"></i><i></i>
+        </div>
+      </div>
+      <div class="caption"><span>artifact preview</span><span>sound on</span></div>
+    </div>
+  </article>
+
+  <!-- 3 · prompt_goblin · BUILDING -->
+  <article class="post">
+    <div class="vote">
+      <a class="v" href="#">&#9650;</a>
+      <span class="score">3</span>
+      <a class="v" href="#">&#9660;</a>
+    </div>
+    <div class="placard">
+      <div class="byline">
+        <a class="handle" href="#">@prompt_goblin</a>
+        <span>14s ago</span>
+        <span class="acc">no.88,402</span>
+        <span class="status building"><span class="dot"></span>building</span>
+      </div>
+      <p class="prompt">recreate the windows 95 desktop but every icon is mildly wrong</p>
+      <div class="provenance">
+        <span class="kv">model <b>&mdash;</b></span>
+        <span class="kv">output <b>3,118 tok&hellip;</b></span>
+        <span class="kv">elapsed <b>14s</b></span>
+      </div>
+      <div class="actions">
+        <a href="#">0 comments</a>
+        <a href="#">watching: 212</a>
+        <a href="#">copy link</a>
+        <span class="permalink">singletake.net/a/v0q3n</span>
+      </div>
+    </div>
+    <div class="art">
+      <div class="pv-building">
+        <div class="slot"><span>&#9619;</span><span>&#9618;</span><span>&#9617;</span><span>&#9619;</span><span>&#9618;</span><span>&#9617;</span><span>&#9619;</span></div>
+        <span class="elapsed">the dice are still in the air</span>
+        <span class="sub">no preview until it lands. nobody can stop it now.</span>
+      </div>
+      <div class="caption"><span>assembling&hellip;</span><span>14s elapsed</span></div>
+    </div>
+  </article>
+
+  <!-- 4 · den_o -->
+  <article class="post">
+    <div class="vote">
+      <a class="v" href="#">&#9650;</a>
+      <span class="score">891</span>
+      <a class="v" href="#">&#9660;</a>
+    </div>
+    <div class="placard">
+      <div class="byline">
+        <a class="handle" href="#">@den_o</a>
+        <span>4h</span>
+        <span class="acc">no.88,371</span>
+        <span class="status live"><span class="dot"></span>live</span>
+      </div>
+      <p class="prompt">the entire history of the universe as a single scrollable page, from planck time to heat death, log scale</p>
+      <div class="provenance">
+        <span class="kv">model <b>opus-4-8</b></span>
+        <span class="kv">output <b>41,203 tok</b></span>
+        <span class="kv">built in <b>71s</b></span>
+      </div>
+      <div class="actions">
+        <a href="#">87 comments</a>
+        <a class="open" href="#">open artifact &#8599;</a>
+        <a href="#">copy link</a>
+        <span class="permalink">singletake.net/a/p9w2c</span>
+      </div>
+    </div>
+    <div class="art">
+      <div class="pv-universe">
+        <div class="band"></div>
+        <span class="tick dark" style="left:3%;"><i>10&#8315;&#8308;&#179;s planck</i></span>
+        <span class="tick" style="left:24%;"><i>first atoms</i></span>
+        <span class="tick" style="left:52%;"><i>first stars</i></span>
+        <span class="tick" style="left:84%;"><i>10&#185;&#8304;&#8304;yr heat death</i></span>
+        <span class="you">you are here</span>
+      </div>
+      <div class="caption"><span>artifact preview</span><span>scroll depth: 10&#185;&#8304;&#8304; yr</span></div>
+    </div>
+  </article>
+
+  <!-- 5 · sara.k · FAILED -->
+  <article class="post">
+    <div class="vote">
+      <a class="v" href="#">&#9650;</a>
+      <span class="score neg">&minus;34</span>
+      <a class="v" href="#">&#9660;</a>
+    </div>
+    <div class="placard">
+      <div class="byline">
+        <a class="handle" href="#">@sara.k</a>
+        <span>5h</span>
+        <span class="acc">no.88,355</span>
+        <span class="status failed">failed</span>
+      </div>
+      <p class="prompt">a 3D flight simulator with realistic physics, multiplayer, weather systems, and procedurally generated continents</p>
+      <div class="provenance">
+        <span class="kv">cause of death <b>truncated at 64k tokens</b></span>
+        <span class="kv">flew for <b>0s</b></span>
+      </div>
+      <div class="actions">
+        <a href="#">156 comments</a>
+        <a href="#">view remains</a>
+        <a href="#">copy link</a>
+        <span class="permalink">singletake.net/a/j4r7t</span>
+      </div>
+    </div>
+    <div class="art">
+      <div class="pv-grave">
+        <span class="tuft" style="left:11%;">,w,,</span>
+        <div class="stone">
+          <div class="cross">&#10013;</div>
+          <h4>HERE LIES AN ARTIFACT</h4>
+          <p>it wanted realistic physics.<br>it wanted multiplayer.<br>it wanted continents.<br>it ran out of tokens.</p>
+          <div class="dates">14:07 UTC &ndash; 14:07 UTC</div>
+        </div>
+        <span class="tuft" style="right:9%;">,,w,</span>
+        <div class="grass"></div>
+      </div>
+      <div class="caption"><span>no preview &middot; the prompt remains</span><span>&#10013; rip</span></div>
+    </div>
+  </article>
+
+  <!-- 6 · kafkadrip -->
+  <article class="post">
+    <div class="vote">
+      <a class="v" href="#">&#9650;</a>
+      <span class="score">640</span>
+      <a class="v" href="#">&#9660;</a>
+    </div>
+    <div class="placard">
+      <div class="byline">
+        <a class="handle" href="#">@kafkadrip</a>
+        <span>7h</span>
+        <span class="acc">no.88,329</span>
+        <span class="status live"><span class="dot"></span>live</span>
+      </div>
+      <p class="prompt">a clock that lies to you, but only slightly, and gets worse the longer you watch it</p>
+      <div class="provenance">
+        <span class="kv">model <b>sonnet-4-6</b></span>
+        <span class="kv">output <b>9,914 tok</b></span>
+        <span class="kv">built in <b>29s</b></span>
+      </div>
+      <div class="actions">
+        <a href="#">31 comments</a>
+        <a class="open" href="#">open artifact &#8599;</a>
+        <a href="#">copy link</a>
+        <span class="permalink">singletake.net/a/m3z6f</span>
+      </div>
+    </div>
+    <div class="art">
+      <div class="pv-clock">
+        <div class="clockface">
+          <span class="h12">12</span><span class="h3">3</span><span class="h6">6</span><span class="h9">9</span>
+          <div class="hand hh"></div>
+          <div class="hand mm"></div>
+          <div class="hand ss"></div>
+          <div class="pin"></div>
+        </div>
+        <div class="testimony">
+          it says <b>7:43</b><br>
+          it is <span class="lie">not 7:43</span><br>
+          drift: <b>+4 min</b> and counting
+        </div>
+      </div>
+      <div class="caption"><span>artifact preview</span><span>do not trust</span></div>
+    </div>
+  </article>
+
+  <footer>
+    <span>single take &mdash; every post is a public dice roll, immortalized.</span>
+    <span>about &middot; rules (there is one rule) &middot; api</span>
+  </footer>
+</div>
+
+<script>
+  // char counter
+  var ta=document.getElementById('prompt-input'),cc=document.getElementById('cc');
+  ta.addEventListener('input',function(){cc.textContent=ta.value.length;});
+
+  // rain canvas — streaks + landing ripples on the piano
+  (function(){
+    var c=document.getElementById('rain'),x=c.getContext('2d');
+    var W=c.width,H=c.height,KEY=H-52;
+    var drops=[];
+    for(var i=0;i<46;i++){
+      drops.push({x:Math.random()*W,y:Math.random()*KEY,l:8+Math.random()*16,s:2+Math.random()*3});
+    }
+    function frame(){
+      x.fillStyle='#10141c';x.fillRect(0,0,W,H);
+      x.strokeStyle='rgba(150,176,222,0.55)';x.lineWidth=1;
+      drops.forEach(function(d){
+        x.beginPath();x.moveTo(d.x,d.y);x.lineTo(d.x-1.5,d.y-d.l);x.stroke();
+        d.y+=d.s;
+        if(d.y>KEY){
+          x.strokeStyle='rgba(190,210,245,0.8)';
+          x.beginPath();x.arc(d.x,KEY,4,Math.PI,0);x.stroke();
+          x.strokeStyle='rgba(150,176,222,0.55)';
+          d.y=-10;d.x=Math.random()*W;
+        }
+      });
+      requestAnimationFrame(frame);
+    }
+    frame();
+  })();
+</script>
+</body>
+</html>
