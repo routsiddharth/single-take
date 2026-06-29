@@ -1,6 +1,8 @@
 import { VoteWidget } from "./VoteWidget";
 import { LotActions } from "./LotActions";
 import { PromptText } from "./PromptText";
+import { ArtifactFrame } from "./ArtifactFrame";
+import { BuildingVignette, TombVignette, BlockedVignette } from "./vignettes";
 import { ago, num } from "@/lib/format";
 import type { FeedPost } from "@/lib/queries";
 
@@ -11,6 +13,23 @@ function lotNo(id: string): string {
 }
 
 function Provenance({ p }: { p: FeedPost }) {
+  // Model A — the verified one-shot built here.
+  if (p.verified) {
+    return (
+      <div className="provenance">
+        <span className="verified-tag">✦ verified · built here</span>
+        {p.modelId && <span className="sep">·</span>}
+        {p.modelId && <span className="dim">{p.modelId}</span>}
+        {p.status === "live" && p.generationMs != null && (
+          <>
+            <span className="sep">·</span>
+            <span className="dim">built in {(p.generationMs / 1000).toFixed(1)}s</span>
+          </>
+        )}
+      </div>
+    );
+  }
+  // Model B — crossposted link.
   if (!p.tool) return null;
   return (
     <div className="provenance">
@@ -19,7 +38,53 @@ function Provenance({ p }: { p: FeedPost }) {
   );
 }
 
+function epitaph(p: FeedPost): string {
+  return p.errorDetail || "the model fumbled it";
+}
+
 function Preview({ p }: { p: FeedPost }) {
+  // Model A render states.
+  if (p.verified) {
+    if (p.status === "building") {
+      return (
+        <div className="preview">
+          <div className="preview-frame">
+            <BuildingVignette />
+          </div>
+        </div>
+      );
+    }
+    if (p.status === "failed") {
+      return (
+        <div className="preview">
+          <div className="preview-frame">
+            <TombVignette rip={`№${lotNo(p.id)}`} epitaph={epitaph(p)} />
+          </div>
+        </div>
+      );
+    }
+    if (p.status === "blocked") {
+      return (
+        <div className="preview">
+          <div className="preview-frame">
+            <BlockedVignette />
+          </div>
+        </div>
+      );
+    }
+    if (p.status === "live" && p.artifactKey) {
+      return (
+        <div className="preview">
+          <div className="preview-frame">
+            <ArtifactFrame artifactKey={p.artifactKey} title={`artifact ${p.id}`} />
+          </div>
+        </div>
+      );
+    }
+    return null;
+  }
+
+  // Model B preview.
   if (p.resultImage) {
     return (
       <div className="preview">

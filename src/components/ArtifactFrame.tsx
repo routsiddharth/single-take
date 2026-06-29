@@ -27,7 +27,7 @@ export function ArtifactFrame({
   }
   return (
     <iframe
-      src={`/a/${artifactKey}`}
+      src={`/a/${artifactKey}/index.html`}
       title={title}
       sandbox="allow-scripts"
       loading="lazy"

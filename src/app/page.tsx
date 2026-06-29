@@ -4,6 +4,7 @@ import { getFeed, type Sort } from "@/lib/queries";
 import { Ticker, Masthead, Nav, Footer, ModeSwitch, SortTabs } from "@/components/chrome";
 import { Composer } from "@/components/Composer";
 import { LotCard } from "@/components/LotCard";
+import { HatchWatcher } from "@/components/HatchWatcher";
 
 export const dynamic = "force-dynamic";
 
@@ -52,6 +53,9 @@ export default async function FeedPage({
       ) : (
         items.map((p) => <LotCard key={p.id} p={p} />)
       )}
+
+      {/* watch any building A posts hatch live in place */}
+      <HatchWatcher ids={items.filter((p) => p.status === "building").map((p) => p.id)} />
 
       <Footer
         left={`showing ${items.length} posts · sorted by ${sort}`}

@@ -8,6 +8,9 @@ import { VoteWidget } from "@/components/VoteWidget";
 import { PromptText } from "@/components/PromptText";
 import { PostActions } from "@/components/PostActions";
 import { CommentSection } from "@/components/CommentSection";
+import { ArtifactFrame } from "@/components/ArtifactFrame";
+import { HatchWatcher } from "@/components/HatchWatcher";
+import { BuildingVignette, TombVignette, BlockedVignette } from "@/components/vignettes";
 
 export const dynamic = "force-dynamic";
 
@@ -78,50 +81,136 @@ export default async function PostPage({
         </div>
       </section>
 
-      {post.resultUrl && (
-        <section className="exhibit">
-          <div className="frame-mat">
-            <div className="frame-outer">
-              <div className="frame-inner">
-                {post.resultImage ? (
-                  <img src={post.resultImage} alt="result" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                ) : (
-                  <a href={post.resultUrl} target="_blank" rel="noopener noreferrer" className="link-card">
-                    open result ↗
-                    <div style={{ fontSize: "0.85em", marginTop: 8, opacity: 0.7 }}>
-                      {new URL(post.resultUrl).hostname}
-                    </div>
-                  </a>
-                )}
+      {/* ── Model A: the verified one-shot, built + sealed here ── */}
+      {post.verified ? (
+        <>
+          {post.status === "building" && <HatchWatcher ids={[post.id]} />}
+          <section className="exhibit">
+            <div className="frame-mat">
+              <div className="frame-outer">
+                <div className="frame-inner">
+                  {post.status === "live" && post.artifactKey ? (
+                    <ArtifactFrame artifactKey={post.artifactKey} autoRun title={`artifact ${post.id}`} />
+                  ) : post.status === "building" ? (
+                    <BuildingVignette />
+                  ) : post.status === "blocked" ? (
+                    <BlockedVignette />
+                  ) : (
+                    <TombVignette
+                      rip={`№${lotNo(post.id)}`}
+                      epitaph={post.errorDetail || "the model fumbled it"}
+                    />
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        </section>
-      )}
+          </section>
 
-      <section className="prov-zone">
-        <div className="prov-card">
-          <div className="prov-kicker">the result</div>
-          <div className="prov-grid">
-            <div className="prov-cell">
-              <span className="k">made with</span>
-              <span className="v">{post.tool || "—"}</span>
+          <section className="prov-zone">
+            <div className="prov-card">
+              <div className="prov-kicker">
+                ✦ verified one-shot · built &amp; sealed here
+              </div>
+              <div className="prov-grid">
+                <div className="prov-cell">
+                  <span className="k">status</span>
+                  <span className="v">{post.status}</span>
+                </div>
+                <div className="prov-cell">
+                  <span className="k">model</span>
+                  <span className="v">{post.modelId || "—"}</span>
+                </div>
+                <div className="prov-cell">
+                  <span className="k">build time</span>
+                  <span className="v">
+                    {post.generationMs != null ? (post.generationMs / 1000).toFixed(1) : "—"}
+                    <small>s</small>
+                  </span>
+                </div>
+                <div className="prov-cell">
+                  <span className="k">turns</span>
+                  <span className="v">{post.buildTurns ?? "—"}</span>
+                </div>
+                <div className="prov-cell">
+                  <span className="k">tokens</span>
+                  <span className="v">
+                    {post.tokensIn != null || post.tokensOut != null
+                      ? `${num(post.tokensIn ?? 0)}→${num(post.tokensOut ?? 0)}`
+                      : "—"}
+                  </span>
+                </div>
+                <div className="prov-cell">
+                  <span className="k">bundle</span>
+                  <span className="v">
+                    {post.fileCount != null ? `${post.fileCount} files` : "—"}
+                    {post.bundleBytes != null && (
+                      <small> · {(post.bundleBytes / 1024).toFixed(1)}kb</small>
+                    )}
+                  </span>
+                </div>
+                <div className="prov-cell">
+                  <span className="k">cost</span>
+                  <span className="v">
+                    {post.costUsd != null ? `$${post.costUsd.toFixed(4)}` : "—"}
+                  </span>
+                </div>
+                <div className="prov-cell">
+                  <span className="k">posted</span>
+                  <span className="v">{utcStamp(post.createdAt)}</span>
+                </div>
+              </div>
             </div>
-            <div className="prov-cell">
-              <span className="k">prompt length</span>
-              <span className="v">
-                {chars}
-                <small>/300 chars</small>
-              </span>
+            <PostActions slug={post.id} prompt={post.prompt} resultUrl={post.artifactKey ? `/a/${post.artifactKey}/index.html` : null} />
+          </section>
+        </>
+      ) : (
+        <>
+          {post.resultUrl && (
+            <section className="exhibit">
+              <div className="frame-mat">
+                <div className="frame-outer">
+                  <div className="frame-inner">
+                    {post.resultImage ? (
+                      <img src={post.resultImage} alt="result" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    ) : (
+                      <a href={post.resultUrl} target="_blank" rel="noopener noreferrer" className="link-card">
+                        open result ↗
+                        <div style={{ fontSize: "0.85em", marginTop: 8, opacity: 0.7 }}>
+                          {new URL(post.resultUrl).hostname}
+                        </div>
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </section>
+          )}
+
+          <section className="prov-zone">
+            <div className="prov-card">
+              <div className="prov-kicker">the result</div>
+              <div className="prov-grid">
+                <div className="prov-cell">
+                  <span className="k">made with</span>
+                  <span className="v">{post.tool || "—"}</span>
+                </div>
+                <div className="prov-cell">
+                  <span className="k">prompt length</span>
+                  <span className="v">
+                    {chars}
+                    <small>/300 chars</small>
+                  </span>
+                </div>
+                <div className="prov-cell">
+                  <span className="k">posted</span>
+                  <span className="v">{utcStamp(post.createdAt)}</span>
+                </div>
+              </div>
             </div>
-            <div className="prov-cell">
-              <span className="k">posted</span>
-              <span className="v">{utcStamp(post.createdAt)}</span>
-            </div>
-          </div>
-        </div>
-        <PostActions slug={post.id} prompt={post.prompt} resultUrl={post.resultUrl} />
-      </section>
+            <PostActions slug={post.id} prompt={post.prompt} resultUrl={post.resultUrl} />
+          </section>
+        </>
+      )}
 
       <CommentSection
         slug={post.id}

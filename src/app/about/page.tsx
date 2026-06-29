@@ -96,19 +96,20 @@ export default async function AboutPage() {
       <article className="article tinted">
         <div className="art-num">
           <div className="n">5</div>
-          <div className="lbl">coming soon -- the verified one-shot ✨</div>
+          <div className="lbl">rule 5 -- the verified one-shot ✦</div>
         </div>
         <div className="art-body">
           <p className="art-legal">
-            Generate it here. <span className="hl">No retries. No edits.</span> Real provenance. A permanent immutable artifact.
+            <span className="hl">Build it here.</span> One prompt, one autonomous session, no retries — an isolated agent builds a static app, we seal it into an immutable bundle and host it forever.
           </p>
           <p className="art-gloss">
-            <b>plain version:</b> the thing crossposts can't prove. coming soon when we get some API credits.
+            <b>plain version:</b> the thing crossposts can&apos;t prove. post a prompt at{" "}
+            <Link href="/generate">build it here</Link> and watch it build, alone, in public.
           </p>
         </div>
         <div className="art-side">
-          <span className="side-stamp">coming soon</span>
-          <p className="side-note">working on it. patience.</p>
+          <span className="side-stamp inkfill">verified</span>
+          <p className="side-note">frozen forever. one shot per day.</p>
         </div>
       </article>
 

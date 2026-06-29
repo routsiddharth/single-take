@@ -27,8 +27,10 @@ export type Quota = {
   resetAt: number;
 };
 
-/** Today's usage for a user. Counts every post made this UTC day (a roll is a
- *  roll — building/live/failed/blocked all spend the shot, per plan §1.5). */
+/** Today's A-build usage for a user. Counts only verified (Model A) builds made
+ *  this UTC day — a roll is a roll, so building/live/failed/blocked all spend
+ *  the shot (plan §10). Model B link posts are the free-volume lane and do NOT
+ *  consume the A quota. */
 export function quotaFor(user: User, now = Date.now()): Quota {
   const dayStart = utcDayStart(now);
   const row = db
@@ -37,6 +39,7 @@ export function quotaFor(user: User, now = Date.now()): Quota {
     .where(
       and(
         eq(posts.authorId, user.id),
+        eq(posts.verified, true),
         gte(posts.createdAt, new Date(dayStart)),
       ),
     )

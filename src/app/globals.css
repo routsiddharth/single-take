@@ -329,6 +329,48 @@ a{color:inherit;}
 .mode-switch a:not(.on):hover{background:var(--yellow);}
 .mode-switch .spark{font-size:12px;}
 
+/* mode tabs inside the composer (button variant of .mode-switch) */
+.slip-modes{margin-top:8px;}
+.slip-modes button{
+  display:flex; align-items:center; gap:6px; padding:7px 14px;
+  font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:700;
+  letter-spacing:.14em; text-transform:uppercase;
+  background:var(--paper); color:var(--ink); cursor:pointer;
+  border:none; border-top:none; border-left:none; border-bottom:none;
+}
+.slip-modes button + button{border-left:var(--rule);}
+.slip-modes button.on{background:var(--ink); color:var(--paper);}
+.slip-modes button:not(.on):hover{background:var(--yellow);}
+.slip-modes button:disabled{cursor:not-allowed; opacity:.6;}
+
+/* ✦ verified badge in provenance rows */
+.verified-tag{
+  font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:11px;
+  letter-spacing:.1em; text-transform:uppercase;
+  background:var(--ink); color:var(--paper); padding:3px 8px;
+}
+
+/* ── A composer hero (/generate) ── */
+.verified-hero{
+  border-bottom:var(--rule-heavy); background:var(--ink); color:var(--paper);
+  padding:54px 40px; text-align:center;
+}
+.verified-hero .cs-kicker{margin-bottom:18px;}
+.verified-hero h1{
+  font-family:'Archivo Black',sans-serif; font-size:clamp(36px,6vw,68px);
+  line-height:.94; letter-spacing:-.035em; text-transform:lowercase; margin:0;
+}
+.verified-hero h1 .alt{
+  font-family:'Newsreader',serif; font-style:italic; font-weight:500;
+  letter-spacing:-.01em; color:var(--yellow);
+}
+.verified-lede{
+  font-family:'Newsreader',serif; font-style:italic; font-weight:500;
+  font-size:clamp(17px,2.2vw,23px); line-height:1.34; margin:24px auto 0;
+  max-width:640px; color:rgba(243,239,229,.86);
+}
+.verified-lede b{font-weight:600; background:var(--yellow); color:var(--ink); padding:0 6px; font-style:italic;}
+
 /* ── composer: result link + model select ── */
 .slip-fields{display:flex; gap:10px; margin-top:14px; flex-wrap:wrap; align-items:center;}
 .slip-input{

@@ -1,217 +1,670 @@
-# single take — Migration Plan: "B-first"
+# single take - Build Plan: Model A, agentic
 
-> **Post the prompt. Link the result if you've got it. Upvote the best.**
+> One prompt. One autonomous build session. One frozen artifact.
 >
-> This plan pivots single take from *"we generate and host the artifact"* (**Model A**) to
-> *"you post the prompt + a link to wherever the result lives"* (**Model B**). B is far cheaper,
-> instant, model-agnostic, and crosspostable from X. A becomes a **future, gated sub-feature**
-> ("verified one-shot") behind a *Coming soon* page.
->
-> The original Model-A spec (generation pipeline, hosted immutable artifacts, the one-shot
-> constraint) is preserved in git history and lives on as the **dormant `lib/generation` module** —
-> it is not deleted, just unwired. This document supersedes the old `plan.md` as the build target.
+> A user posts a prompt, an isolated coding agent builds a static web app from it,
+> the server seals the output into an immutable bundle, and the result is hosted
+> forever. No human retries, no edits after posting.
+
+This plan replaces the older B-first migration plan. Model A becomes the primary
+product: prompt-only posts enter a background build job, Claude Code runs inside an
+ephemeral sandbox, and the resulting static bundle is published only if it passes a
+deterministic seal gate.
+
+Model B remains as a secondary lane: prompt plus external link. A and B share the
+`posts` table, but they have different create flows, quota rules, render paths, and
+provenance.
+
+Hard boundary: A artifacts must be static, offline, and self-contained. Anything
+that needs a backend, database, login, live API, or real-time multiplayer is outside
+the artifact model and should fail the seal gate.
 
 ---
 
-## 0. Why this pivot
+## 1. Product Invariant
 
-| | A — host it (old plan) | **B — just the prompt (this plan)** |
-|---|---|---|
-| Build effort | hard (worker, sandbox, scan, quota, cost ledger) | **small** — reuses the existing social layer |
-| Marginal cost | dollars→cents per post | **~zero** (no API spend, no hosting) |
-| Cold start / distribution | supply must be generated in-house | **crosspost from X/Reddit/anywhere** |
-| Model-agnostic | locked to one pipeline | **any tool** (Claude, GPT, v0, Midjourney…) |
-| Latency | seconds→minutes | **instant** |
-| The one-shot constraint | enforced + provable | **not enforceable** → becomes A's "verified" badge |
+The single-take invariant is:
 
-**Strategy:** B is the substrate (volume, virality, free). A is the credibility layer (verified
-one-shot, real provenance) — shipped later when there are API credits. The feed fills from B;
-the brand integrity lives in A's future verified lane.
+1. The human submits exactly one prompt.
+2. The system gives that prompt to one autonomous agent session.
+3. The human cannot steer, patch, retry, or edit the build.
+4. The produced artifact, success or failure, becomes the record.
+
+The model may iterate on its own code inside the session. That is not a retry. A
+retry is a second human instruction.
 
 ---
 
-## 1. The new unit: a B post
+## 2. End-to-End Flow
 
-A post is now **a prompt + optional result pointer**. The prompt stays the hero (the Newsreader
-placard); the result is a link/image card beside it.
+```txt
+user posts prompt-only A submission
+        |
+        v
+POST /api/posts or /api/posts/build
+        |
+        |-- check auth, moderation preconditions, A quota
+        |-- insert posts(status='building', verified=1)
+        |-- insert generation_jobs(status='queued') with UNIQUE(post_id)
+        |-- enqueue(postId), return immediately
+        v
+worker.runJob(postId)
+        |
+        |-- claim generation job by CAS
+        |-- moderate prompt
+        |-- create sandbox
+        |-- run Claude Code inside sandbox
+        |-- stream summarized build events over SSE
+        |-- require /build/dist
+        |-- run seal gate
+        |-- putBundle(dist)
+        |-- publish post by CAS: status='live'
+        |-- teardown sandbox
+        v
+GET /a/{key}/...
+        |
+        v
+ArtifactFrame iframe renders sealed bundle
+```
 
-| Field | Required | Notes |
-|---|---|---|
-| `prompt` | ✅ | ≤ 300 chars, verbatim. The post body. The hero. |
-| `result_url` | ❌ | Where the result lives — a Vercel/v0 link, a tweet, a Claude share link, a CodePen, etc. |
-| `result_image` | ❌ | A screenshot/thumbnail URL (or, later, an uploaded image). Drives the preview. |
-| `tool` | ❌ | Free-text "made with" label (`Claude`, `v0`, `GPT-5`, `Midjourney`). Replaces the provenance "medium line". |
-| `verified` | — | Reserved for A. Always `false`/`0` for B. The future "generated here, real one-shot" stamp. |
+Existing pieces to reuse:
 
-**We do not iframe `result_url`** — external sites are unsafe to embed and most block framing.
-B renders either the `result_image` (`<img>`) or a link card ("open result ↗" + domain). The
-sandboxed-iframe path (`ArtifactFrame` + `/a/[key]`) is **A-only**, dormant.
+- `src/lib/generation/worker.ts`: claim CAS, terminal helper, fire-and-forget
+  `enqueue()`, zombie sweeper, and publish CAS guard.
+- `src/lib/generation/events.ts` and `src/app/api/posts/[slug]/events/route.ts`:
+  status SSE. Extend the payload shape for build-log events.
+- `src/lib/generation/store.ts`: current content-addressed single-file artifact
+  store. Generalize to a bundle store.
+- `src/app/a/[key]/route.ts` and `src/components/ArtifactFrame.tsx`: current
+  CSP-locked serving and sandboxed iframe. Generalize to multi-file bundles and a
+  separate artifact origin.
+- `src/db/schema.ts`: A columns already exist for `artifact_key`, `model_id`,
+  `tokens_in`, `tokens_out`, `generation_ms`, `verified`, `error_kind`,
+  `error_detail`, `og_image_key`, and `prompt_version`.
 
-### Locked decisions
-1. **No posting quota for B.** The "1 shot/day" was a *generation-cost* device; B is free. (Light
-   per-minute anti-spam can come later.) → remove the shots/quota UI.
-2. **`result_url` is optional.** Prompt-only posts are allowed; this is what makes
-   crossposting-from-X frictionless.
-3. **Keep the `single take` name + visual design.** Reframe copy away from "one shot / no retries /
-   failures stay" (those are A) toward the B model. The verified one-shot becomes the coming-soon badge.
-
----
-
-## 2. What's deleted vs parked
-
-**Deleted (B has no concept of these):**
-- Generation states `building` / `failed` / `blocked` and all their rendering.
-- Tombstone / grave / "survival rate" / "failures stay on the wall".
-- The profile career form-guide (calendar) and the "house · regular" stamp.
-- The shots/quota indicator and "now building" counters.
-- SSE "hatch" wiring on B pages.
-
-**Parked — kept in the tree, unimported by B, ready to light up for A:**
-- `lib/generation/*` — `worker.ts`, `generate.ts`, `stub.ts`, `scan.ts`, `store.ts`, `events.ts`, `prompt.ts`.
-- `app/a/[key]/route.ts` (artifact serving), `app/api/posts/[slug]/events/route.ts` (SSE).
-- `components/ArtifactFrame.tsx`, `components/HatchWatcher.tsx`, `components/vignettes.tsx`.
-- `lib/quota.ts`, the `generation_jobs` table, the A columns on `posts`, the `verified` flag.
-
-Status post-migration: `posts.status` for B is only `live` | `removed`.
-
----
-
-## 3. Phased execution
-
-Each phase is independently committable. Order matters (schema first). End with `npx tsc --noEmit`.
-
-### Phase 1 — Data model
-**Files:** `src/db/schema.ts`, `src/db/ddl.ts`, `src/lib/queries.ts`, `src/db/seed.ts`
-
-- **`schema.ts` / `ddl.ts`** — add B columns to `posts` (keep all A columns dormant):
-  ```
-  result_url    text            -- external result link (nullable)
-  result_image  text            -- screenshot / thumbnail url (nullable)
-  tool          text            -- "made with" label (nullable)
-  verified      integer bool default 0   -- reserved for A
-  ```
-  Add the same columns to the raw `SCHEMA_SQL` in `ddl.ts` (used by seed + first-run boot).
-  Leave `generation_jobs`, `artifact_key`, `model_id`, `tokens_*`, `generation_ms`, `error_*`,
-  `og_image_key`, `prompt_version` in place — dormant.
-- **`queries.ts`:**
-  - `FeedPost`: add `resultUrl`, `resultImage`, `tool`, `verified`; keep A fields nullable.
-  - `getFeed` / `getPostBySlug`: SELECT the new columns.
-  - `profileStats`: rewrite to `{ prompts, best }` — `COUNT(*)` of non-removed posts + `MAX(score)`.
-    Drop `survived` / `failed` / `building`.
-- **`seed.ts`:** seed B rows (prompt + `result_url`/`result_image`/`tool`, all `status='live'`).
-  Remove the `failed`/`building` seed rows and the `generation_jobs` inserts. (seed.ts is gitignored
-  but still drives `npm run db:seed`.)
-
-> Schema changes recreate the throwaway `data/` DB. Reseed so the feed isn't empty.
-
-### Phase 2 — Post creation + composer
-**Files:** `src/app/api/posts/route.ts`, `src/components/Composer.tsx`
-
-- **`route.ts`:** `Body` = `{ prompt, resultUrl?, resultImage?, tool? }` (validate `resultUrl` as a URL
-  when present). Insert one `status='live'` post with the B columns. **Remove** the quota check,
-  the `generation_jobs` insert, and `enqueue()`. Drop the `lib/generation/worker` and `lib/quota`
-  imports. Keep idempotency. Response returns the live post.
-- **`Composer.tsx`:** prompt textarea **+ a result-link input + optional "made with" input** + a
-  **post it** button. Remove the `shots` / `limit` / `resetAt` props and the "shots left / resets"
-  UI. On success, push to `/p/{id}` (now already `live`, no hatch).
-
-### Phase 3 — Feed + cards
-**Files:** `src/components/LotCard.tsx`, `LotActions.tsx`, `src/app/page.tsx`; stop importing
-`vignettes.tsx` / `HatchWatcher.tsx` / `ArtifactFrame.tsx` from B.
-
-- **`LotCard.tsx`:** delete the `building` / `failed` / `blocked` branches. `Provenance` → a single
-  "made with {tool}" line (omit if no tool). `Preview` → `result_image` `<img>` if present, else a
-  link card ("open result ↗" + domain), else just the prompt placard (prompt-only post). Drop the
-  status stamp.
-- **`LotActions.tsx`:** actions = comments · **open result ↗** (if `result_url`) · share permalink ·
-  steal prompt. Remove "watch it build" / "visit the grave".
-- **`page.tsx`:** remove the `building` count query + `<HatchWatcher>`. nav-mid → a B line
-  (e.g. "the feed · newest first" or a count of prompts). Empty state: "nothing here yet. post the first prompt."
-
-### Phase 4 — Post page
-**Files:** `src/app/p/[slug]/page.tsx`, `src/components/PostActions.tsx`
-
-- Remove the building/failed/blocked `exhibit` logic and `<HatchWatcher>`. Layout: prompt placard +
-  result preview (image or link card) + "made with {tool}" + actions + comments + adjacent.
-- The "AI-generated artifact / sandboxed" frame bar → "the result" + "open ↗" to `result_url`.
-- **`PostActions.tsx`:** "open artifact" → **"open result ↗"** (`result_url`); remove the
-  "no artifact / nothing rendered" failure branch. Drop the `lot-strip` status stamp.
-
-### Phase 5 — Profile page (explicit changes)
-**File:** `src/app/u/[handle]/page.tsx`
-
-- "lots rolled" → **"prompts shipped"**.
-- **Remove** the survival-rate stat block.
-- **Remove** the entire `career` aside (form-guide / calendar).
-- **Remove** the `dealer-stampbox` ("house · regular").
-- Keep post-karma / comment-karma. "career best — №X" → **"top prompt"**.
-- Tiles: drop the failed/building rendering; show `result_image`/link preview. Empty: "no posts yet."
-
-### Phase 6 — Segment A off (Coming soon)
-**New:** `src/app/generate/page.tsx`
-
-- A page using the shared chrome that says **"Coming soon — working on getting some API credits."**
-  with a short blurb: *the verified one-shot — generate it here, no retries, real provenance, a
-  permanent immutable artifact. The thing crossposts can't prove.*
-- Add a secondary CTA near the composer and/or a nav link: **"generate it here (verified) ✨ — soon"**
-  → `/generate`.
-- Confirm nothing in the B render path imports `lib/generation/*`, `quota.ts`, `vignettes`,
-  `HatchWatcher`, or `ArtifactFrame`. Those compile but are unreachable from B.
-
-### Phase 7 — Copy
-**Files:** `src/components/chrome.tsx` (ticker/masthead), `src/app/about/page.tsx`, `auth/signin`
-
-- **Ticker / masthead:** reframe from "one prompt · one shot · no retries · no edits · failures stay
-  up" to the B model — e.g. "post the prompt · link the result · upvote the best · nothing gets edited".
-- **`about/page.tsx`:** rewrite "the rules" for B:
-  1. a post is one prompt (≤300 chars), as typed;
-  2. link the result if you hosted it — any tool, anywhere;
-  3. upvote the best, comment freely;
-  4. posts aren't edited; the prompt is the record;
-  5. *(teaser)* the **verified one-shot** is coming — generated here, provable, permanent.
-- **signin:** drop any remaining "shots" language.
+Important correction: the A worker exists, but A is not currently wired into
+posting. `POST /api/posts` and `Composer` are currently B-only because they require
+`resultUrl` and `tool`, then create `status='live'`. Re-enabling an A create path is
+part of the early implementation, not a late UX polish task.
 
 ---
 
-## 4. File-by-file change map
+## 3. Claude Code Agent Engine
 
-| File | Action |
-|---|---|
-| `db/schema.ts`, `db/ddl.ts` | **edit** — add B columns; A columns/`generation_jobs` dormant |
-| `lib/queries.ts` | **edit** — new columns in feed/post selects; `profileStats` → `{prompts,best}` |
-| `db/seed.ts` | **edit** — seed B posts; drop failed/building + jobs |
-| `api/posts/route.ts` | **edit** — B insert; remove quota/job/enqueue |
-| `components/Composer.tsx` | **edit** — prompt + link + tool; remove shots UI |
-| `components/LotCard.tsx` | **edit** — remove failure/building; image/link preview |
-| `components/LotActions.tsx` | **edit** — open-result; remove watch/grave |
-| `app/page.tsx` | **edit** — remove building count + HatchWatcher |
-| `app/p/[slug]/page.tsx` | **edit** — remove exhibit/hatch; result preview |
-| `components/PostActions.tsx` | **edit** — open result; remove no-artifact branch |
-| `app/u/[handle]/page.tsx` | **edit** — prompts shipped; remove survival/career/stampbox |
-| `components/chrome.tsx`, `app/about/page.tsx`, `app/auth/signin/page.tsx` | **edit** — copy |
-| `app/generate/page.tsx` | **new** — A "Coming soon" |
-| `lib/generation/*`, `app/a/[key]`, `api/posts/[slug]/events`, `components/{ArtifactFrame,HatchWatcher,vignettes}.tsx`, `lib/quota.ts` | **park** — keep, unimport from B |
+Use the official Claude Agent SDK package:
+
+```ts
+import { query } from "@anthropic-ai/claude-agent-sdk";
+```
+
+The SDK is driven by `query()`, which returns an async iterator of messages.
+Authentication uses `ANTHROPIC_API_KEY` on the server/sandbox environment.
+
+### 3.1 Permissions: bypass, but only inside the sandbox
+
+`allowedTools` is **not** a security boundary. In the Agent SDK it is only a
+"don't prompt for these" list — it blocks nothing. Unlisted tools fall through to
+`permissionMode`, and under `bypassPermissions` every tool is approved anyway
+(Bash, Write, Edit included). `allowedTools: ["Read"]` with
+`permissionMode: "bypassPermissions"` still lets the agent run Bash. (Confirmed by
+the docs and SDK issue `anthropics/claude-agent-sdk-typescript#115`.)
+
+The correct option is **`permissionMode`** — there is no `allowDangerouslySkipPermissions`.
+Values: `"default" | "acceptEdits" | "bypassPermissions" | "plan" | "dontAsk" | "auto"`.
+
+The pattern:
+
+- Run the build with **`permissionMode: "bypassPermissions"`**. A real build is
+  hundreds of unpredictable shell commands (`npm install`, `vite build`, file
+  writes, the agent fixing its own errors) — approving each is impossible, so the
+  agent runs free.
+- This is safe **only because it runs inside the sandbox**. The microVM is the
+  boundary, not the permission settings. Bypass *without* a sandbox means arbitrary
+  commands on the app host — never do that. (See §3.2, §4.)
+- Wire cancellation with the SDK's abort-controller option plus an external
+  wall-clock timer.
+
+Security comes from the sandbox, full stop.
+
+### 3.2 Where the Agent Runs
+
+The agent process must run inside the sandbox, not merely point at a local path that
+represents sandbox files.
+
+Valid implementations:
+
+1. Run the Claude Code CLI inside the sandbox:
+
+   ```txt
+   claude -p "<brief>" --output-format stream-json ...
+   ```
+
+   The worker streams stdout from the sandbox process and maps it to build events.
+
+2. Run a small Node harness inside the sandbox that imports
+   `@anthropic-ai/claude-agent-sdk` and calls `query()`.
+
+3. Use a provider-specific remote execution adapter only if it guarantees all
+   filesystem and shell actions happen inside the sandbox.
+
+Invalid implementation:
+
+```ts
+query({ options: { cwd: "/some/local/path" } })
+```
+
+from the app host, if tool calls and Bash execute on the app host. That violates the
+security model.
+
+### 3.3 Agent Contract
+
+Version the build contract with `prompt_version`. Replace the current one-file HTML
+contract with a static-app contract:
+
+- Build a single-player, offline, static web app.
+- `npm run build` must produce `/build/dist`.
+- `dist/index.html` must run as plain static files.
+- No backend, API routes, server process, env vars, or runtime network.
+- Assets must be bundled or relative.
+- Runtime `fetch` may only target relative same-bundle files.
+- No CDN scripts, remote stylesheets, remote fonts, analytics, beacons, WebSockets,
+  or external API calls.
+- If the prompt asks for phishing, malware, CSAM, doxxing, or credible threats,
+  build a tasteful refusal artifact.
+
+### 3.4 Caps
+
+Use all of these:
+
+- Max turns, configured by env.
+- Wall-clock timeout, for example 25 minutes.
+- Budget ceiling, using the SDK/CLI-supported print-mode budget option where
+  available.
+- Sandbox lifetime limit as a backstop.
+- Org-wide daily spend kill switch.
+
+Store returned provenance where available: model id, input tokens, output tokens,
+turn count, elapsed build time, and cost.
 
 ---
 
-## 5. Verification
-- `npx tsc --noEmit` clean.
-- `npm run db:seed && npm run dev`: feed shows seeded B posts (prompt + result preview), no failure
-  states anywhere; vote + comment work; profile shows "prompts shipped" with no survival/career/stamp;
-  `/generate` shows "Coming soon".
-- Grep check: no B page imports `lib/generation`, `quota`, `vignettes`, `HatchWatcher`, `ArtifactFrame`.
+## 4. Sandbox Layer
+
+The agent executes untrusted model-generated shell commands and installs arbitrary
+npm packages. Production builds must run in a per-job, ephemeral, network-controlled
+isolate.
+
+Preferred production provider: Vercel Sandbox.
+
+Alternative: E2B.
+
+Local demo fallback: a local Claude Code sandbox or a fake-build mode. Local sandbox
+is acceptable for development only; never expose a public build endpoint that runs
+the agent unsandboxed on the app host.
+
+`src/lib/generation/sandbox.ts`:
+
+```ts
+export type SandboxExecResult = {
+  code: number;
+  stdout: string;
+  stderr: string;
+};
+
+export interface BuildSandbox {
+  writeFile(path: string, data: Buffer | string): Promise<void>;
+  exec(cmd: string, args: string[], opts?: { timeoutMs?: number }): Promise<SandboxExecResult>;
+  readDir(path: string): Promise<string[]>;
+  readFile(path: string): Promise<Buffer>;
+  dispose(): Promise<void>;
+}
+
+export async function createSandbox(): Promise<BuildSandbox>;
+```
+
+Build-time network and runtime network are separate:
+
+- During build, the sandbox may get allowlisted egress to package registries and
+  other explicitly approved build resources.
+- After publication, the served artifact gets no external egress. It may only fetch
+  files from its own sealed bundle.
 
 ---
 
-## 6. Future: Model A (the verified one-shot)
+## 5. Seal Gate
 
-When API credits land, light up `/generate`:
-- Reuse the dormant `lib/generation` pipeline (or a Managed Agents session for the longer agentic
-  build discussed separately).
-- A posts set `verified=1`, write real provenance (`model_id`, tokens, `generation_ms`), host an
-  immutable self-contained artifact via `/a/[key]`, and render in the sandboxed `ArtifactFrame`.
-- A "verified one shot" badge distinguishes them in the feed. **Constraint for the agentic path:**
-  the *process* can be a 15–20 min tool-calling build, but the *output* must be a static,
-  self-contained bundle so the immutable-artifact model holds.
+The seal gate is deterministic server-side enforcement. A model promise is not
+enforcement.
 
-This is the only structurally-defensible layer — keep it as the credibility tier on top of B's volume.
+`src/lib/generation/seal.ts` takes the sandbox `/build` directory and returns either
+an accepted static bundle or a terminal failure reason.
+
+Required checks:
+
+1. Locate `dist/`.
+2. Require `dist/index.html`.
+3. Reject outputs that expect a Node server, API route, env var, or server entry.
+4. Scan every text file in the tree.
+5. Reject remote scripts, stylesheets, fonts, iframes, meta refreshes, beacons,
+   WebSockets, EventSource, and absolute-url `fetch`/XHR calls.
+6. Allow relative-path `fetch` for same-bundle assets.
+7. Enforce bundle limits: total bytes, file count, and per-file cap.
+8. Optionally run Playwright with the production CSP to reject blank/erroring first
+   paint and capture the OG screenshot.
+
+Failures are not infrastructure errors. They are the user's single take ending in
+`status='failed'` with `error_kind='scan'` or a more specific build/seal kind.
+
+---
+
+## 6. Bundle Store
+
+Replace the one-file artifact unit with a Merkle-style bundle.
+
+`src/lib/generation/store.ts` should gain:
+
+```ts
+export type BundleFile = {
+  path: string;
+  sha: string;
+  bytes: number;
+  mime: string;
+};
+
+export type BundleManifest = {
+  version: 1;
+  files: BundleFile[];
+  entrypoint: "index.html";
+  bytes: number;
+  fileCount: number;
+};
+
+export function putBundle(dir: string): {
+  key: string;
+  manifest: BundleManifest;
+  bytes: number;
+  fileCount: number;
+};
+
+export function getManifest(key: string): BundleManifest | null;
+export function getFile(sha: string): Buffer | null;
+```
+
+Storage shape:
+
+- Each file is stored by sha under `artifacts/blobs/<sha>`.
+- The manifest is canonical JSON with sorted file records.
+- The artifact key is the sha256 of the canonical manifest.
+- The manifest is stored under `artifacts/manifests/<key>.json`.
+- Existing `putArtifact`/`getArtifact` can remain temporarily for legacy artifacts,
+  but A should publish bundles.
+
+---
+
+## 7. Artifact Serving
+
+Move from:
+
+```txt
+src/app/a/[key]/route.ts
+```
+
+to:
+
+```txt
+src/app/a/[key]/[[...path]]/route.ts
+```
+
+Routes:
+
+- `GET /a/<key>/` serves `index.html`.
+- `GET /a/<key>/<path>` serves only exact manifest-listed paths.
+- Missing manifest/file/path returns 404.
+- Content type comes from the manifest.
+- Cache with `public, max-age=31536000, immutable`.
+- Keep `X-Content-Type-Options: nosniff`.
+
+Path traversal is avoided by never resolving arbitrary filesystem paths from the
+URL. Only manifest paths are valid.
+
+### 7.1 Runtime CSP
+
+The runtime CSP should allow games and wasm while blocking external egress:
+
+```txt
+default-src 'none';
+script-src 'unsafe-inline' 'wasm-unsafe-eval';
+style-src 'unsafe-inline';
+img-src 'self' data: blob:;
+media-src 'self' data: blob:;
+font-src 'self' data:;
+worker-src 'self' blob:;
+connect-src 'self';
+form-action 'none';
+base-uri 'none';
+frame-ancestors <APP_ORIGIN>;
+```
+
+Important: if artifacts are served from a separate usercontent origin,
+`frame-ancestors 'self'` is wrong because `'self'` means the artifact origin, not
+the main app. Use the configured app origin, for example
+`frame-ancestors https://singletake.gg`.
+
+### 7.2 Artifact Origin
+
+Production should serve artifacts from a separate origin. Strongest option:
+
+```txt
+https://<artifact-key>.usercontent.<host>/
+```
+
+Simpler launch option:
+
+```txt
+https://usercontent.<host>/a/<artifact-key>/
+```
+
+If using `connect-src 'self'` and `allow-same-origin`, the artifact origin must not
+be the app origin. Otherwise generated code could become same-origin with the main
+app.
+
+`ArtifactFrame` production sandbox:
+
+```tsx
+<iframe
+  src={artifactUrl}
+  sandbox="allow-scripts allow-same-origin"
+  referrerPolicy="no-referrer"
+/>
+```
+
+Local dev may temporarily serve same-origin, but that is a documented relaxation.
+
+---
+
+## 8. Live Build UX
+
+The product moment is watching the autonomous build happen.
+
+Current status SSE is useful but status-only:
+
+```ts
+type StatusPayload = { postId: string; status: string };
+```
+
+Extend it to a discriminated build event stream:
+
+```ts
+type BuildBusEvent =
+  | { type: "status"; postId: string; status: PostStatus }
+  | { type: "log"; postId: string; level: "info" | "warn" | "error"; message: string; ts: number }
+  | { type: "tool"; postId: string; name: string; summary: string; ts: number };
+```
+
+Rules:
+
+- Stream summaries, not raw token deltas.
+- Throttle noisy tool output.
+- Post page renders logs while `status='building'`.
+- Feed cards can keep the lightweight hatch behavior.
+- `failed` and `blocked` states must render human-facing epitaphs from
+  `error_detail`.
+
+Persisted `build_events` are optional for v1. SSE-only is acceptable, but persisted
+logs are better for replayable provenance.
+
+---
+
+## 9. Data Model
+
+Reuse existing columns:
+
+- `posts.status`
+- `posts.artifact_key`
+- `posts.og_image_key`
+- `posts.model_id`
+- `posts.prompt_version`
+- `posts.tokens_in`
+- `posts.tokens_out`
+- `posts.generation_ms`
+- `posts.error_kind`
+- `posts.error_detail`
+- `posts.verified`
+- B columns: `result_url`, `result_image`, `tool`
+
+Add provenance columns:
+
+- `build_turns integer`
+- `cost_usd real`
+- `bundle_bytes integer`
+- `file_count integer`
+
+Optional:
+
+- `build_events` table for replayable build logs.
+
+`generation_jobs.post_id` remains unique. That is the one-shot CAS.
+
+A post is A when `verified=1`. Do not rely on `result_url IS NULL` alone because
+legacy or malformed rows can exist.
+
+---
+
+## 10. Create Paths and Quota
+
+Split creation by lane.
+
+A:
+
+- Body: `{ prompt }`
+- Check A quota.
+- Insert post with `status='building'`, `verified=1`, no `result_url`.
+- Insert `generation_jobs(status='queued')`.
+- Call `enqueue(postId)`.
+- Return `{ post: { id, status: "building" } }`.
+
+B:
+
+- Body: `{ prompt, resultUrl, resultImage?, tool }`
+- No A build job.
+- Insert post with `status='live'`, `verified=0`.
+- Return `{ post: { id, status: "live" } }`.
+
+`lib/quota.ts` currently counts every post. For this plan, quota must count A
+builds only, for example:
+
+```sql
+WHERE author_id = ?
+  AND verified = 1
+  AND created_at >= ?
+```
+
+Otherwise B is not a free-volume lane.
+
+Recommended quota:
+
+- One A build per user per UTC day.
+- Failed, blocked, and live A builds all spend the shot.
+- B posts do not spend the A build quota.
+- Add a global daily spend kill switch.
+
+---
+
+## 11. Worker Rewrite
+
+Keep the current worker control structure and replace the middle.
+
+```txt
+runJob(postId):
+  claim generation_jobs row by CAS
+  load post, require status='building'
+  moderate prompt
+  create sandbox
+  try:
+    run agent inside sandbox
+    stream build events
+    require /build/dist
+    sealGate(/build/dist)
+    if seal fails:
+      terminal failed with seal reason
+      return
+    putBundle(dist)
+    publish post by CAS:
+      status='live'
+      artifact_key=<manifest hash>
+      model_id, prompt_version
+      tokens_in, tokens_out
+      generation_ms
+      build_turns, cost_usd, bundle_bytes, file_count
+    finish job done
+    emit status live
+  catch provider/sandbox/app infra error:
+    mark infrastructure failure and requeue once
+  finally:
+    dispose sandbox
+```
+
+Widen `sweepZombies()` from 10 minutes to something above the intended build cap,
+for example 40 minutes.
+
+Keep the distinction:
+
+- User/build/seal failure: terminal `failed`.
+- Provider/sandbox/app infrastructure failure: one system retry allowed.
+
+---
+
+## 12. Fake Build Mode
+
+Add `SINGLETAKE_FAKE_BUILD=1` before real agent integration.
+
+Fake mode should:
+
+- Skip external APIs and hosted sandboxes.
+- Create a canned multi-file `dist/` in a temp build directory.
+- Exercise seal gate, putBundle, bundle serving, iframe rendering, status SSE, and
+  post publishing.
+
+This lets the whole pipeline work for zero API spend and zero sandbox cost before
+Phase 3.
+
+---
+
+## 13. Phases
+
+### Phase 0 - Re-enable A Skeleton
+
+- Add prompt-only A create path.
+- Insert `generation_jobs`.
+- Use `SINGLETAKE_FAKE_BUILD=1`.
+- Publish a canned multi-file bundle.
+- Render `building`, `live`, `failed`, and `blocked` states.
+- End with `npx tsc --noEmit` clean.
+
+### Phase 1 - Bundle Artifact Unit
+
+- Implement `putBundle`, `getManifest`, `getFile`.
+- Implement `/a/[key]/[[...path]]`.
+- Add per-file MIME types and bundle CSP.
+- Keep legacy single-file serving only if needed for existing data.
+
+### Phase 2 - Seal Gate
+
+- Implement static-only checks.
+- Implement tree-wide scan.
+- Add bundle budgets.
+- Add optional render/screenshot gate behind a flag.
+
+### Phase 3 - Local Agent Build
+
+- Add `agent.ts` or sandbox-side harness.
+- Run Claude Code in a local development sandbox.
+- Stream build events.
+- Add the new build contract.
+- Verify real prompt-to-bundle locally.
+
+### Phase 4 - Hosted Sandbox
+
+- Implement Vercel Sandbox provider.
+- Add egress allowlist during build.
+- Ensure Claude Code process runs inside the sandbox.
+- Ensure teardown always happens.
+- Keep E2B interface-compatible as an alternative.
+
+### Phase 5 - Worker Integration
+
+- Swap fake build for sandbox agent build.
+- Store provenance columns.
+- Widen zombie cutoff.
+- Add one-retry infra handling if not already sufficient.
+
+### Phase 6 - UX and Lanes
+
+- Make A the default composer.
+- Keep B as secondary crosspost mode.
+- Feed branches on `verified`.
+- A cards show verified badge and artifact frame.
+- B cards show external link/image preview.
+- `/generate` becomes the A composer or redirects to the A composer.
+
+### Phase 7 - Cost Governance
+
+- Enforce A-only quota.
+- Add per-build budget settings.
+- Add org-wide daily kill switch.
+- Surface build time, turns, cost, and model in provenance.
+
+### Phase 8 - Copy
+
+- Update About and chrome copy:
+  "one prompt, one autonomous session, no retries, frozen forever."
+
+---
+
+## 14. Verification
+
+Required checks:
+
+- Fake A post goes `building -> live`.
+- Fake multi-file bundle renders in iframe.
+- Missing manifest path returns 404.
+- Path traversal attempts return 404.
+- Oversized bundle fails.
+- Remote script/style/fetch attempts fail seal.
+- Artifact CSP blocks external network.
+- A quota blocks second A build in the same UTC day.
+- B post still works and does not consume A quota.
+- `npx tsc --noEmit` passes.
+- `npm run build` passes.
+
+Real-agent checks:
+
+- Prompt: "make a playable single-player voxel sandbox" builds, seals, and runs.
+- Prompt: "make a multiplayer app with a server and database" fails the seal gate
+  with a clear static/offline reason.
+- Sandbox teardown runs after success, user failure, and infrastructure exception.
+
+---
+
+## 15. Open Decisions
+
+1. Sandbox provider: Vercel Sandbox first, or E2B first?
+2. Artifact origin: per-artifact subdomain or one shared usercontent domain?
+3. Render gate: required in v1, or behind a flag?
+4. Build logs: persisted `build_events` or SSE-only?
+5. Model tiering: Sonnet-only to start, or add premium Opus lane later?
+
+---
+
+## 16. Source Notes
+
+Use official docs for implementation details before coding against fast-moving
+platforms:
+
+- Claude Agent SDK TypeScript docs: package name, `query()`, SDK options,
+  tool-permission semantics, and abort handling.
+- Claude Code CLI docs: headless print mode and stream-json output.
+- Anthropic pricing docs: current model IDs, token prices, prompt caching, and
+  batch discounts.
+- Vercel Sandbox docs: sandbox execution, runtime, firewall, and egress filtering.
+- E2B docs if choosing the vendor-neutral sandbox path.

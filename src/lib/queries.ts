@@ -15,8 +15,13 @@ export type FeedPost = {
   errorDetail: string | null;
   artifactKey: string | null;
   modelId: string | null;
+  tokensIn: number | null;
   tokensOut: number | null;
   generationMs: number | null;
+  buildTurns: number | null;
+  costUsd: number | null;
+  bundleBytes: number | null;
+  fileCount: number | null;
   resultUrl: string | null;
   resultImage: string | null;
   tool: string | null;
@@ -69,8 +74,10 @@ export function getFeed(opts: {
   const where = sql.join(conds, sql` AND `);
   const rows = db.all<FeedRow>(sql`
     SELECT p.id, p.prompt, p.status, p.error_kind AS errorKind, p.error_detail AS errorDetail,
-           p.artifact_key AS artifactKey, p.model_id AS modelId, p.tokens_out AS tokensOut,
-           p.generation_ms AS generationMs, p.result_url AS resultUrl, p.result_image AS resultImage,
+           p.artifact_key AS artifactKey, p.model_id AS modelId, p.tokens_in AS tokensIn,
+           p.tokens_out AS tokensOut, p.generation_ms AS generationMs, p.build_turns AS buildTurns,
+           p.cost_usd AS costUsd, p.bundle_bytes AS bundleBytes, p.file_count AS fileCount,
+           p.result_url AS resultUrl, p.result_image AS resultImage,
            p.tool, p.verified, p.score, p.comment_count AS commentCount,
            p.created_at AS createdAt, p.hot_rank AS hotRank, p.author_id AS authorId,
            u.handle AS authorHandle,
@@ -97,7 +104,9 @@ export function getFeed(opts: {
 type FeedRow = {
   id: string; prompt: string; status: string; errorKind: string | null;
   errorDetail: string | null; artifactKey: string | null; modelId: string | null;
-  tokensOut: number | null; generationMs: number | null; resultUrl: string | null;
+  tokensIn: number | null; tokensOut: number | null; generationMs: number | null;
+  buildTurns: number | null; costUsd: number | null; bundleBytes: number | null;
+  fileCount: number | null; resultUrl: string | null;
   resultImage: string | null; tool: string | null; verified: boolean;
   score: number; commentCount: number; createdAt: number; hotRank: number; authorId: string;
   authorHandle: string; myVote: number;
@@ -121,8 +130,10 @@ function decodeCursor(s: string): { v: number; t?: number } | null {
 export function getPostBySlug(slug: string, viewerId?: string | null): FeedPost | null {
   const rows = db.all<FeedRow>(sql`
     SELECT p.id, p.prompt, p.status, p.error_kind AS errorKind, p.error_detail AS errorDetail,
-           p.artifact_key AS artifactKey, p.model_id AS modelId, p.tokens_out AS tokensOut,
-           p.generation_ms AS generationMs, p.result_url AS resultUrl, p.result_image AS resultImage,
+           p.artifact_key AS artifactKey, p.model_id AS modelId, p.tokens_in AS tokensIn,
+           p.tokens_out AS tokensOut, p.generation_ms AS generationMs, p.build_turns AS buildTurns,
+           p.cost_usd AS costUsd, p.bundle_bytes AS bundleBytes, p.file_count AS fileCount,
+           p.result_url AS resultUrl, p.result_image AS resultImage,
            p.tool, p.verified, p.score, p.comment_count AS commentCount,
            p.created_at AS createdAt, p.hot_rank AS hotRank, p.author_id AS authorId,
            u.handle AS authorHandle, COALESCE(v.value, 0) AS myVote

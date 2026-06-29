@@ -35,4 +35,20 @@ export const db = drizzle(sqlite, { schema });
  */
 function ensureSchema(s: Database.Database) {
   s.exec(SCHEMA_SQL);
+  // Additive migrations for DBs created before a column landed. CREATE TABLE
+  // IF NOT EXISTS won't add columns to a pre-existing table, so backfill here.
+  const cols = new Set(
+    (s.prepare(`PRAGMA table_info(posts)`).all() as { name: string }[]).map(
+      (c) => c.name,
+    ),
+  );
+  const additions: [string, string][] = [
+    ["build_turns", "INTEGER"],
+    ["cost_usd", "REAL"],
+    ["bundle_bytes", "INTEGER"],
+    ["file_count", "INTEGER"],
+  ];
+  for (const [name, type] of additions) {
+    if (!cols.has(name)) s.exec(`ALTER TABLE posts ADD COLUMN ${name} ${type}`);
+  }
 }

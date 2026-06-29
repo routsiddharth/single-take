@@ -42,11 +42,13 @@ export const users = sqliteTable(
 
 /** building | live | failed | blocked | removed */
 export type PostStatus = "building" | "live" | "failed" | "blocked" | "removed";
-/** truncation | refusal | scan | moderation | infrastructure */
+/** truncation | refusal | scan | seal | build | moderation | infrastructure */
 export type ErrorKind =
   | "truncation"
   | "refusal"
-  | "scan"
+  | "scan" // content violation found by the tree-wide seal scan
+  | "seal" // structural seal failure (no dist, server expected, over budget)
+  | "build" // the agent's build produced no usable dist
   | "moderation"
   | "infrastructure";
 
@@ -68,6 +70,11 @@ export const posts = sqliteTable(
     tokensIn: integer("tokens_in"),
     tokensOut: integer("tokens_out"),
     generationMs: integer("generation_ms"),
+    // A provenance (plan §9): filled by the agentic build at publish time
+    buildTurns: integer("build_turns"), // agent turn count
+    costUsd: real("cost_usd"), // build cost in USD
+    bundleBytes: integer("bundle_bytes"), // sealed bundle total bytes
+    fileCount: integer("file_count"), // sealed bundle file count
     resultUrl: text("result_url"), // B: external result link (nullable)
     resultImage: text("result_image"), // B: screenshot / thumbnail url (nullable)
     tool: text("tool"), // B: "made with" label (nullable)
